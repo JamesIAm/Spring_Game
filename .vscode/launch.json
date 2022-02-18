@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-SpringGameApplication<spring_game>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "mainClass": "james.springboot.spring_game.SpringGameApplication",
+            "projectName": "spring_game",
+            "args": ""
+        }
+    ]
+}
