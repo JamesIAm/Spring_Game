@@ -1,13 +1,13 @@
-package james.spring.game;
+package james.springboot.spring_game;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GameApplication {
+public class SpringGameApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GameApplication.class, args);
+		SpringApplication.run(SpringGameApplication.class, args);
 	}
 
 }

@@ -5,7 +5,7 @@ plugins {
 	id 'war'
 }
 
-group = 'james.spring'
+group = 'james.springboot'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 

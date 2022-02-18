@@ -1,10 +1,10 @@
-package james.spring.game;
+package james.springboot.spring_game;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class GameApplicationTests {
+class SpringGameApplicationTests {
 
 	@Test
 	void contextLoads() {
