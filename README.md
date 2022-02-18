@@ -1,0 +1,1 @@
+Plan is to put a gomuku agent on here and then make it able to be played against
