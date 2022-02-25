@@ -1,6 +1,7 @@
 package james.springboot.spring_game.Services;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class GameService {
     }
 
     public void resetBoard() {
+        board = new ArrayList<>();
         // Initialises board of BOARD_SIZE to be all 0s
         for (int y = 0; y < BOARD_SIZE; y++) {
             ArrayList<Integer> row = new ArrayList<Integer>();
@@ -37,13 +39,16 @@ public class GameService {
         winner = 0;
     }
 
-    public ArrayList<ArrayList<Integer>> getBoard(boolean gameOver) throws GameOverException {
+    public HashMap<String, Object> getBoard(boolean gameOver) throws GameOverException {
         if (winner != 0) {
             if (!gameOver) {
                 throw new GameOverException(winner);
             }
         }
-        return this.board;
+        HashMap<String, Object> toReturn = new HashMap<>();
+        toReturn.put("board", this.board);
+        toReturn.put("currentPlayer", this.currentPlayer);
+        return toReturn;
     }
 
     public void playMove(@NonNull Integer playerId, @NonNull Integer y, @NonNull Integer x)
@@ -66,36 +71,21 @@ public class GameService {
         }
     }
 
-    private void winCheck() {
-        Integer winner = verticalCheck();
-        if (winner != 0) {
-            this.winner = winner;
-            return;
-        }
-        winner = horizontalCheck();
-        if (winner != 0) {
-            this.winner = winner;
-            return;
-        }
-        winner = diagonalCheckRight();
-        if (winner != 0) {
-            this.winner = winner;
-            return;
-        }
-        winner = diagonalCheckLeft();
-        if (winner != 0) {
-            this.winner = winner;
-            return;
+    private void winCheck() throws GameOverException {
+        try {
+            verticalCheck();
+            horizontalCheck();
+            diagonalCheckRight();
+            diagonalCheckLeft();
+        } catch (GameOverException e) {
+            this.winner = Integer.valueOf(e.getMessage());
+            throw e;
         }
         log.info("No Winner");
     }
 
-    private Integer verticalCheck() {
-        Integer newWinner = 0;
+    private void verticalCheck() throws GameOverException {
         for (int firstRow = 0; firstRow < BOARD_SIZE - 4; firstRow++) {
-            if (newWinner != 0) {
-                break;
-            }
             for (int column = 0; column < BOARD_SIZE; column++) {
                 int currentCandidateToBeAWinner = board.get(firstRow).get(column);
                 for (int currentRow = firstRow + 1; currentRow < firstRow + 5; currentRow++) {
@@ -105,20 +95,14 @@ public class GameService {
                     }
                 }
                 if (currentCandidateToBeAWinner != 0) {
-                    newWinner = currentCandidateToBeAWinner;
-                    break;
+                    throw new GameOverException(currentCandidateToBeAWinner);
                 }
             }
         }
-        return newWinner;
     }
 
-    private Integer horizontalCheck() {
-        Integer newWinner = 0;
+    private void horizontalCheck() throws GameOverException {
         for (int row = 0; row < BOARD_SIZE; row++) {
-            if (newWinner != 0) {
-                break;
-            }
             for (int firstColumn = 0; firstColumn < BOARD_SIZE - 4; firstColumn++) {
                 int currentCandidateToBeAWinner = board.get(row).get(firstColumn);
                 for (int currentColumn = firstColumn + 1; currentColumn < firstColumn + 5; currentColumn++) {
@@ -128,20 +112,14 @@ public class GameService {
                     }
                 }
                 if (currentCandidateToBeAWinner != 0) {
-                    newWinner = currentCandidateToBeAWinner;
-                    break;
+                    throw new GameOverException(currentCandidateToBeAWinner);
                 }
             }
         }
-        return newWinner;
     }
 
-    private Integer diagonalCheckRight() {
-        Integer newWinner = 0;
+    private void diagonalCheckRight() throws GameOverException {
         for (int row = 0; row < BOARD_SIZE - 4; row++) {
-            if (newWinner != 0) {
-                break;
-            }
             for (int column = 0; column < BOARD_SIZE - 4; column++) {
                 int currentCandidateToBeAWinner = board.get(row).get(column);
                 for (int currentAddition = 1; currentAddition < 5; currentAddition++) {
@@ -151,20 +129,14 @@ public class GameService {
                     }
                 }
                 if (currentCandidateToBeAWinner != 0) {
-                    newWinner = currentCandidateToBeAWinner;
-                    break;
+                    throw new GameOverException(currentCandidateToBeAWinner);
                 }
             }
         }
-        return newWinner;
     }
 
-    private Integer diagonalCheckLeft() {
-        Integer newWinner = 0;
+    private void diagonalCheckLeft() throws GameOverException {
         for (int row = 0; row < BOARD_SIZE - 4; row++) {
-            if (newWinner != 0) {
-                break;
-            }
             for (int column = 4; column < BOARD_SIZE; column++) {
                 int currentCandidateToBeAWinner = board.get(row).get(column);
                 for (int currentAddition = 1; currentAddition < 5; currentAddition++) {
@@ -174,11 +146,9 @@ public class GameService {
                     }
                 }
                 if (currentCandidateToBeAWinner != 0) {
-                    newWinner = currentCandidateToBeAWinner;
-                    break;
+                    throw new GameOverException(currentCandidateToBeAWinner);
                 }
             }
         }
-        return newWinner;
     }
 }

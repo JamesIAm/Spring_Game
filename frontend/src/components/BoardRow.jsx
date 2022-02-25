@@ -1,7 +1,14 @@
 import React from "react";
 import BoardCell from "./BoardCell";
 
-const BoardRow = ({ rowKey, row, updateBoard, player, setPlayer }) => {
+const BoardRow = ({
+	rowKey,
+	row,
+	updateBoard,
+	player,
+	gameWinner,
+	setGameWinner,
+}) => {
 	return (
 		<tr row={rowKey}>
 			{row.map((cell, columnKey) => {
@@ -13,7 +20,8 @@ const BoardRow = ({ rowKey, row, updateBoard, player, setPlayer }) => {
 						columnKey={columnKey}
 						updateBoard={updateBoard}
 						player={player}
-						setPlayer={setPlayer}
+						gameWinner={gameWinner}
+						setGameWinner={setGameWinner}
 					/>
 				);
 			})}

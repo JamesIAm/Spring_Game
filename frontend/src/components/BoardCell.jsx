@@ -8,6 +8,8 @@ const BoardCell = ({
 	updateBoard,
 	player,
 	setPlayer,
+	gameWinner,
+	setGameWinner,
 }) => {
 	const makeMove = (x, y) => {
 		axios
@@ -17,17 +19,27 @@ const BoardCell = ({
 				y: y,
 			})
 			.then((res) => updateBoard())
-			.then(() => {
-				if (player === 1) {
-					setPlayer(2);
+			.catch((err) => {
+				let status = err.response.status;
+				console.log(err.response);
+				if (status === 417) {
+					setGameWinner(err.response.data.message);
+					console.log("sending true");
+					updateBoard(true);
 				} else {
-					setPlayer(1);
+					console.error(err);
 				}
 			});
 	};
 	return (
 		<td row={rowKey} column={columnKey}>
-			<button onClick={() => makeMove(columnKey, rowKey)}>{cell}</button>
+			<button
+				onClick={() => makeMove(columnKey, rowKey)}
+				disabled={gameWinner}
+				className={"cell" + cell}
+			>
+				{cell}
+			</button>
 		</td>
 	);
 };
