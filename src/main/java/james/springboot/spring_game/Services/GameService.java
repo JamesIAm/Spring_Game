@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidMoveException;
+import lombok.NonNull;
 
 @Service
 public class GameService {
@@ -35,19 +36,25 @@ public class GameService {
 
     public ArrayList<ArrayList<Integer>> getBoard(boolean gameOver) throws GameOverException {
         if (winner != 0) {
-            throw new GameOverException(winner);
+            if (!gameOver) {
+                throw new GameOverException(winner);
+            }
         }
         return this.board;
     }
 
-    public void playMove(Integer player, Integer y, Integer x) throws InvalidMoveException, GameOverException {
+    public void playMove(@NonNull Integer playerId, @NonNull Integer y, @NonNull Integer x)
+            throws InvalidMoveException, GameOverException, WrongPlayerException {
+        if (this.currentPlayer != playerId) {
+            throw new WrongPlayerException();
+        }
         if (winner != 0) {
             throw new GameOverException(winner);
         }
         if (this.board.get(y).get(x) != 0) {
             throw new InvalidMoveException();
         }
-        this.board.get(y).set(x, player);
+        this.board.get(y).set(x, playerId);
         winCheck();
         if (currentPlayer == 1) {
             currentPlayer = 2;
