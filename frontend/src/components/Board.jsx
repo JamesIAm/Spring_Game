@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
+import BoardRow from "./BoardRow";
 
 const Board = () => {
 	const [boardState, setBoardState] = useState([]);
+	const [player, setPlayer] = useState(1);
 	const updateBoard = () => {
 		axios
 			.get("http://localhost:8080/game/getState")
@@ -12,35 +14,25 @@ const Board = () => {
 			})
 			.catch((err) => console.error(err));
 	};
-	const makeMove = (x, y) => {
-		axios
-			.post("http://localhost:8080/game/makeMove", {
-				player: 1,
-				x: x,
-				y: y,
-			})
-			.then((res) => updateBoard());
-	};
+
 	return (
 		<>
-			{boardState.map((row, rowKey) => {
-				return (
-					<tr key={rowKey} row={rowKey}>
-						{row.map((cell, columnKey) => {
-							return (
-								<td
-									key={columnKey}
-									row={rowKey}
-									column={columnKey}
-								>
-									<button>{cell}</button>
-								</td>
-							);
-						})}
-					</tr>
-				);
-			})}
-			<button onClick={() => updateBoard()}>asd</button>
+			<h2>Current player: {player}</h2>
+			<table>
+				{boardState.map((row, rowKey) => {
+					return (
+						<BoardRow
+							row={row}
+							key={rowKey}
+							rowKey={rowKey}
+							updateBoard={updateBoard}
+							player={player}
+							setPlayer={setPlayer}
+						/>
+					);
+				})}
+			</table>
+			<button onClick={() => updateBoard()}>Get board</button>
 		</>
 	);
 };
