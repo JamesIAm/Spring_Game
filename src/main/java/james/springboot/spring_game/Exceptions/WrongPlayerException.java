@@ -1,4 +1,4 @@
-package james.springboot.spring_game.Services;
+package james.springboot.spring_game.Exceptions;
 
 public class WrongPlayerException extends Exception {
     public WrongPlayerException() {

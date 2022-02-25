@@ -6,9 +6,12 @@ import org.springframework.stereotype.Service;
 
 import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidMoveException;
+import james.springboot.spring_game.Exceptions.WrongPlayerException;
 import lombok.NonNull;
+import lombok.extern.log4j.Log4j2;
 
 @Service
+@Log4j2
 public class GameService {
     private final int BOARD_SIZE = 10;
     private int winner = 0;
@@ -84,6 +87,7 @@ public class GameService {
             this.winner = winner;
             return;
         }
+        log.info("No Winner");
     }
 
     private Integer verticalCheck() {
@@ -106,7 +110,7 @@ public class GameService {
                 }
             }
         }
-        return winner;
+        return newWinner;
     }
 
     private Integer horizontalCheck() {
@@ -129,7 +133,7 @@ public class GameService {
                 }
             }
         }
-        return winner;
+        return newWinner;
     }
 
     private Integer diagonalCheckRight() {
@@ -152,7 +156,7 @@ public class GameService {
                 }
             }
         }
-        return winner;
+        return newWinner;
     }
 
     private Integer diagonalCheckLeft() {
@@ -175,6 +179,6 @@ public class GameService {
                 }
             }
         }
-        return winner;
+        return newWinner;
     }
 }
