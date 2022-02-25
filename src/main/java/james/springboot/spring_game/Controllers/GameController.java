@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import james.springboot.spring_game.Services.GameService;
 import james.springboot.spring_game.Services.WrongPlayerException;
 
 @RestController
+@CrossOrigin("http://localhost:3000")
 @RequestMapping("/game")
 public class GameController {
     private GameService gameService;
