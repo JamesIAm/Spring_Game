@@ -28,6 +28,8 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.metrics:spring-metrics:latest.release'
+	implementation 'io.prometheus:simpleclient_common:latest.release'
 }
 
 tasks.named('test') {
