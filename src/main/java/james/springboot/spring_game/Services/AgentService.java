@@ -1,6 +1,11 @@
 package james.springboot.spring_game.Services;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+
+import james.springboot.spring_game.Move;
+import james.springboot.spring_game.Pair;
 
 public class AgentService {
     private final Integer ID = 1;
@@ -19,11 +24,14 @@ public class AgentService {
             ((X_IN_A_LINE + 1) * 3) - 1 }; // These indicate, of all the scores,
     // which ones indicate a win situation. 5 in a row (enclosed on both sides), 5
     // in a row (enclosed on one side), and 5 in a row (not enclosed)
-    private final Double SEARCH_TIME = 5D; // How many seconds the system searches before returning it's best solution
+    private final Integer SEARCH_TIME = 5; // How many seconds the system searches before returning it's best solution
     // private final Integer counter = 0
     private final ArrayList<Integer> priorityMoves = new ArrayList<Integer>();
     // Contains a list of moves that should be searched first (continuations of the
     // line of the last move played)
+    private ArrayList<ArrayList<Pair<Integer, Integer>>> horizontalCoords = new ArrayList<>();
+    private Integer[][] verticalCoords = new Integer[this.BOARD_SIZE][this.BOARD_SIZE];
+    private Long startTime;
 
     public AgentService() {
         defineOrders();
@@ -35,32 +43,63 @@ public class AgentService {
     // It defines an order to search over the data so that each row goes vertically,
     // horizonatally or diagonally
     public void defineOrders() {
-        this.horizontalCoords=np.zeros([this.BOARD_SIZE,this.BOARD_SIZE],dtype=object);for(int y=0;y<this.BOARD_SIZE;y++){for(int x=0;x<this.BOARD_SIZE;x++){this.horizontalCoords[y][x]=((x,y));}}
+        for (int y = 0; y < this.BOARD_SIZE; y++) {
+            ArrayList<Pair<Integer, Integer>> lineOfMoves = new ArrayList<>();
+            for (int x = 0; x < this.BOARD_SIZE; x++) {
+                lineOfMoves.add(new Pair<Integer, Integer>(x, y));
 
-        this.verticalCoords=np.swapaxes(this.horizontalCoords,0,1);
+            }
+            this.horizontalCoords.add(lineOfMoves);
+        }
 
-        ArrayList<Integer>downDiagTemp=new ArrayList<Integer>();for(int x=1-this.BOARD_SIZE;x<this.BOARD_SIZE;x++){downDiagTemp.append(np.diag(this.horizontalCoords,x))}this.downDiagCoords=np.array(downDiagTemp,dtype=object)
-
-        ArrayList<Integer>upDiagTemp=new ArrayList<Integer>();flippedCoords=np.fliplr(this.horizontalCoords);for(int x=1-this.BOARD_SIZE;x<this.BOARD_SIZE;x++){upDiagTemp.append(np.diag(flippedCoords,x));this.upDiagCoords=np.array(upDiagTemp,dtype=object);
+        // TODO:
+        // this.verticalCoords=np.swapaxes(this.horizontalCoords,0,1);
+        // TODO:
+        // ArrayList<Integer>downDiagTemp=new ArrayList<Integer>();for(int
+        // x=1-this.BOARD_SIZE;x<this.BOARD_SIZE;x++){downDiagTemp.append(np.diag(this.horizontalCoords,x))}this.downDiagCoords=np.array(downDiagTemp,dtype=object)
+        // TODO:
+        // ArrayList<Integer>upDiagTemp=new
+        // ArrayList<Integer>();flippedCoords=np.fliplr(this.horizontalCoords);for(int
+        // x=1-this.BOARD_SIZE;x<this.BOARD_SIZE;x++){upDiagTemp.append(np.diag(flippedCoords,x));this.upDiagCoords=np.array(upDiagTemp,dtype=object);
     }
 
     // Tries to find a move within a given time.
     // Iterates depth of search so if it runs out of time, it will default to the
     // last found best move
     // If the program throws any error it defaults to a valid value
-    public void move(Integer[][] board) {
-        try{this.startTime=time()prevBestMove=(1,1)
-        // this.counter = 0
-        myStartScore=this.countLines(board,this.ID)theirStartScore=this.countLines(board,this.ID*-1)for depth in range(1,this.MAX_DEPTH):bestScore,bestMove=this.findMyMove(board,0,depth,-10000,10000,myStartScore,theirStartScore,[])if(bestMove==None or bestScore==None):bestMove=prevBestMove break else:
-        // print("Likelihood of winning: ", bestScore, "\tBest Move", bestMove,
-        // "\tDepth", depth) // Shows the progression of the algorithm
-        prevBestMove=bestMove
-        // print(bestMove)
-        // print("Counter = ", this.counter)
-        return bestMove}catch(Exception e){
-        // print("Error occurred, default value returned\nError -", e)// Logs occurance
-        // of an error
-        for x in range(this.BOARD_SIZE):for y in range(this.BOARD_SIZE):moveLoc=(y,x)if legalMove(board,moveLoc):return moveLoc
+    public Move move(Integer[][] board) {
+        try {
+            this.startTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+            Move prevBestMove = new Move(1, 1, 0);
+            // this.counter = 0
+            int myStartScore = this.countLines(board, this.ID);
+            int theirStartScore = this.countLines(board, this.ID * -1);
+            Move bestMove = prevBestMove;
+            for (int depth = 1; depth < this.MAX_DEPTH; depth++) {
+                bestMove = this.findMyMove(board, 0, depth, -10000, 10000, myStartScore, theirStartScore,
+                        new ArrayList<Move>());
+                if (bestMove == null || bestMove.score == 0) {
+                    bestMove = prevBestMove;
+                    break;
+                } else {
+                    // print("Likelihood of winning: ", bestScore, "\tBest Move", bestMove,
+                    // "\tDepth", depth) // Shows the progression of the algorithm
+                    prevBestMove = bestMove;
+                }
+            }
+            // print(bestMove)
+            // print("Counter = ", this.counter)
+            return bestMove;
+        } catch (Exception e) {
+            // print("Error occurred, default value returned\nError -", e)// Logs occurance
+            // of an error
+            for (int x = 0; x < this.BOARD_SIZE; x++) {
+                for (int y = 0; y < this.BOARD_SIZE; y++) {
+                    if (board[y][x] == 0) {
+                        return new Move(x, y);
+                    }
+                }
+            }
 
         }
     }
@@ -70,39 +109,77 @@ public class AgentService {
     // until maxDepth is reached
     // It searches depth first, and uses alpha beta pruning to cut down on the
     // number of searched nodes
-    public void findMyMove(Integer[][] board, int depth, int maxDepth, int alpha, int beta, int prevThisPlayerScore,
-            int prevOtherPlayerScore, ArrayList<Integer> priorityMoves) {
-        if(time()>(this.startTime+this.SEARCH_TIME)){return 0,None;}if(depth<maxDepth){
-        // print("Alpha: ", alpha, "\tBeta: ", beta)
-        validMoves=this.findMoves(board,priorityMoves.copy());bestScore=None;bestMove=();for(int move:validMoves){thisPlayerScore,priorityMoves1=this.countChangeAdd(this.ID,board,prevThisPlayerScore.copy(),move);otherPlayerScore,priorityMoves2=this.countChangeMinus(this.ID*-1,board,prevOtherPlayerScore.copy(),move);newPriorityMoves=priorityMoves1+priorityMoves2;simulatedBoard=this.simulateMove(board,move[1],move[0],this.ID);if(thisPlayerScore[this.INDEXES[0]]>0||thisPlayerScore[this.INDEXES[1]]>0||thisPlayerScore[this.INDEXES[2]]>0){
-        // Check if the game is won
-        return 1000,move;}else{
-        // If not won, go a layer deeper and calculate their move
-        score,newMove=this.findTheirMove(simulatedBoard,depth+1,maxDepth,alpha,beta,otherPlayerScore,thisPlayerScore,newPriorityMoves);if(score==None){break;}else{
-        // Initialise the best score
-        if(bestScore==None){bestScore=score;bestMove=move;}
-        // Update the best score if it's higher than the current best
-        if(score>bestScore){bestScore=score;bestMove=move;}if(bestScore>=beta){break;}if(bestScore>alpha){alpha=bestScore;}
-        // If time is up, return 0 (causes the move() function to return the best found
-        // previous move)
-        if(time()>(this.startTime+this.SEARCH_TIME)){return 0,None}else{
-        // if (depth==2):
-        // print(bestScore, bestMove)
-        return bestScore,bestMove;}
-
-        else{
-        // At max depth, calculate the score based on the number of lines of differing
-        // lengths it has
-        // this.counter+=1
-        myScore=prevThisPlayerScore;theirScore=prevOtherPlayerScore;return(sum(this.NEXT_PLAYER_WEIGHTS*myScore)-sum(this.CURRENT_PLAYER_WEIGHTS*theirScore)),[];}
+    public Move findMyMove(Integer[][] board, int depth, int maxDepth, int alpha, int beta, int prevThisPlayerScore,
+            int prevOtherPlayerScore, ArrayList<Move> priorityMoves) {
+        if (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) > (this.startTime + this.SEARCH_TIME)) {
+            return new Move();
+        }
+        if (depth < maxDepth) {
+            // print("Alpha: ", alpha, "\tBeta: ", beta)
+            ArrayList<Move> validMoves = this.findMoves(board, priorityMoves);
+            Move bestMove = new Move();
+            for (Move move : validMoves) {
+                Pair<Integer, ArrayList<Move>> thisPlayerChange = this.countChangeAdd(this.ID, board,
+                        prevThisPlayerScore, move);
+                Pair<Integer, ArrayList<Move>> otherPlayerChange = this.countChangeMinus(this.ID * -1, board,
+                        prevOtherPlayerScore, move);
+                Integer thisPlayerScore = thisPlayerChange.a;
+                Integer otherPlayerScore = otherPlayerChange.a;
+                ArrayList<Move> newPriorityMoves = thisPlayerChange.b;
+                newPriorityMoves.addAll(otherPlayerChange.b);
+                Integer[][] simulatedBoard = this.simulateMove(board, move.x, move.y, this.ID);
+                if (thisPlayerScore[this.INDEXES[0]] > 0 || thisPlayerScore[this.INDEXES[1]] > 0
+                        || thisPlayerScore[this.INDEXES[2]] > 0) {
+                    // Check if the game is won
+                    move.score = 1000;
+                    return move;
+                } else {
+                    // If not won, go a layer deeper and calculate their move
+                    Move newMove = this.findTheirMove(simulatedBoard, depth + 1, maxDepth, alpha, beta,
+                            otherPlayerScore, thisPlayerScore, newPriorityMoves);
+                    if (newMove.score == 0) {
+                        break;
+                    } else {
+                        // Initialise the best score
+                        if (bestMove.score == 0) {
+                            bestMove = newMove;
+                        }
+                        // Update the best score if it's higher than the current best
+                        if (newMove.score > bestMove.score) {
+                            bestMove = newMove;
+                        }
+                        if (bestMove.score >= beta) {
+                            break;
+                        }
+                        if (bestMove.score > alpha) {
+                            alpha = bestMove.score;
+                        }
+                        // If time is up, return 0 (causes the move() function to return the best found
+                        // previous move)
+                        // if (depth==2):
+                        // print(bestScore, bestMove)
+                        return bestMove;
+                    }
+                }
+            }
+        } else {
+            // At max depth, calculate the score based on the number of lines of differing
+            // lengths it has
+            // this.counter+=1
+            int myScore = prevThisPlayerScore;
+            int theirScore = prevOtherPlayerScore;
+            return new Move();
+            // TODO:
+            // return(sum(this.NEXT_PLAYER_WEIGHTS*myScore)-sum(this.CURRENT_PLAYER_WEIGHTS*theirScore)),[];
+        }
     }
 
     // Almost identical to findMyMove, but separated out to make tracking the ID
     // simpler.
     // In hindsight, separating these two was a mistake, as a number of changes had
     // to be done to both functions
-    public void findTheirMove(Integer[][] board, int depth, int maxDepth, int alpha, int beta, int prevThisPlayerScore,
-            int prevOtherPlayerScore, ArrayList<Integer> priorityMoves) {
+    public Move findTheirMove(Integer[][] board, int depth, int maxDepth, int alpha, int beta, int prevThisPlayerScore,
+            int prevOtherPlayerScore, ArrayList<Move> priorityMoves) {
         if(time()>(this.startTime+this.SEARCH_TIME)){return 0,None;}if(depth<maxDepth){validMoves=this.findMoves(board,priorityMoves.copy());bestScore=None;bestMove=();for(int move:validMoves){thisPlayerScore,priorityMoves1=this.countChangeAdd(this.ID*-1,board,prevThisPlayerScore.copy(),move);otherPlayerScore,priorityMoves2=this.countChangeMinus(this.ID,board,prevOtherPlayerScore.copy(),move);newPriorityMoves=priorityMoves1+priorityMoves2;simulatedBoard=this.simulateMove(board,move[1],move[0],this.ID*-1);if(thisPlayerScore[this.INDEXES[0]]>0 or thisPlayerScore[this.INDEXES[1]]>0 or thisPlayerScore[this.INDEXES[2]]>0){return-1000,move;}else{score,newMove=this.findMyMove(simulatedBoard,depth+1,maxDepth,alpha,beta,otherPlayerScore,thisPlayerScore,newPriorityMoves);if(score==None){break;}else{if(bestScore==None){bestScore=score;bestMove=move;}
         // pick the minimum score
         if(score<bestScore){bestScore=score;bestMove=move;}if(bestScore<=alpha){ // If the score is less than the
@@ -114,14 +191,14 @@ public class AgentService {
     }
 
     // Returns a board with an additional square filled in at the x and y coords
-    public void simulateMove(Integer[][] board, int x, int y, int id) {
+    public Integer[][] simulateMove(Integer[][] board, int x, int y, int id) {
         simulatedBoard = np.copy(board);
         simulatedBoard[y][x] = id;
         return simulatedBoard;
     }
 
     // Old count lines function, only used for the initial count as it's much slower
-    public void countLines(Integer[][] board, int id) {
+    public int countLines(Integer[][] board, int id) {
         horizontalScores=this.countLinesInDirection(board,this.horizontalCoords,id);verticalScores=this.countLinesInDirection(board,this.verticalCoords,id);downDiagScores=this.countLinesInDirection(board,this.downDiagCoords,id);upDiagScores=this.countLinesInDirection(board,this.upDiagCoords,id);totalScores=np.concatenate([(horizontalScores[0]+verticalScores[0]+downDiagScores[0]+upDiagScores[0]),(horizontalScores[1]+verticalScores[1]+downDiagScores[1]+upDiagScores[1]),(horizontalScores[2]+verticalScores[2]+downDiagScores[2]+upDiagScores[2])]);return totalScores; // Fix
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // to
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // have
@@ -298,12 +375,15 @@ public class AgentService {
     // total area currently played in
     // Starts with any lines that were made longer or shorter by the last move.
     // (From priorityMoves)
-    public void findMoves (Integer[][] board, ArrayList<Integer> priorityMoves){
+    public ArrayList<Move> findMoves (Integer[][] board, ArrayList<Move> priorityMoves){
         minX = this.BOARD_SIZE;
         minY = this.BOARD_SIZE;
         maxX = 0;
         maxY = 0;
-        validMoves = priorityMoves;
+        ArrayList<Move> validMoves = new ArrayList<>();
+        for (Move move : priorityMoves) {
+            validMoves.add(move);
+        }
         for (int y = 0; y < this.BOARD_SIZE; y++){
             for (int x = 0; x < this.BOARD_SIZE; x++){
                 if (board[y][x] != 0){
