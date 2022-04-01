@@ -166,6 +166,7 @@ public class AgentService {
                         }
                         // Update the best score if it's higher than the current best
                         if (newMove.score > bestMove.score) {
+                            move.score = newMove.score;
                             bestMove = move;
                         }
                         if (bestMove.score >= beta) {
