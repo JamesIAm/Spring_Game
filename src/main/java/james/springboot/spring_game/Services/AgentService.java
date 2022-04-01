@@ -3,10 +3,13 @@ package james.springboot.spring_game.Services;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import james.springboot.spring_game.Move;
 import james.springboot.spring_game.Pair;
+import lombok.Getter;
 
+// @Getter
 public class AgentService {
     private final Integer ID = 1;
     private final Integer BOARD_SIZE = 10;
@@ -26,11 +29,13 @@ public class AgentService {
     // in a row (enclosed on one side), and 5 in a row (not enclosed)
     private final Integer SEARCH_TIME = 5; // How many seconds the system searches before returning it's best solution
     // private final Integer counter = 0
-    private final ArrayList<Integer> priorityMoves = new ArrayList<Integer>();
+    private final ArrayList<Move> priorityMoves = new ArrayList<Move>();
     // Contains a list of moves that should be searched first (continuations of the
     // line of the last move played)
     private ArrayList<ArrayList<Pair<Integer, Integer>>> horizontalCoords = new ArrayList<>();
-    private Integer[][] verticalCoords = new Integer[this.BOARD_SIZE][this.BOARD_SIZE];
+    private ArrayList<ArrayList<Pair<Integer, Integer>>> verticalCoords = new ArrayList<>();
+    private ArrayList<ArrayList<Pair<Integer, Integer>>> upDiagCoords = new ArrayList<>();
+    private ArrayList<ArrayList<Pair<Integer, Integer>>> downDiagCoords = new ArrayList<>();
     private Long startTime;
 
     public AgentService() {
@@ -72,8 +77,8 @@ public class AgentService {
             this.startTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
             Move prevBestMove = new Move(1, 1, 0);
             // this.counter = 0
-            int myStartScore = this.countLines(board, this.ID);
-            int theirStartScore = this.countLines(board, this.ID * -1);
+            Integer[] myStartScore = this.countLines(board, this.ID);
+            Integer[] theirStartScore = this.countLines(board, this.ID * -1);
             Move bestMove = prevBestMove;
             for (int depth = 1; depth < this.MAX_DEPTH; depth++) {
                 bestMove = this.findMyMove(board, 0, depth, -10000, 10000, myStartScore, theirStartScore,
@@ -109,8 +114,8 @@ public class AgentService {
     // until maxDepth is reached
     // It searches depth first, and uses alpha beta pruning to cut down on the
     // number of searched nodes
-    public Move findMyMove(Integer[][] board, int depth, int maxDepth, int alpha, int beta, int prevThisPlayerScore,
-            int prevOtherPlayerScore, ArrayList<Move> priorityMoves) {
+    public Move findMyMove(Integer[][] board, int depth, int maxDepth, int alpha, int beta,
+            Integer[] prevThisPlayerScore, Integer[] prevOtherPlayerScore, ArrayList<Move> priorityMoves) {
         if (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) > (this.startTime + this.SEARCH_TIME)) {
             return new Move();
         }
@@ -119,12 +124,12 @@ public class AgentService {
             ArrayList<Move> validMoves = this.findMoves(board, priorityMoves);
             Move bestMove = new Move();
             for (Move move : validMoves) {
-                Pair<Integer, ArrayList<Move>> thisPlayerChange = this.countChangeAdd(this.ID, board,
+                Pair<Integer[], ArrayList<Move>> thisPlayerChange = this.countChangeAdd(this.ID, board,
                         prevThisPlayerScore, move);
-                Pair<Integer, ArrayList<Move>> otherPlayerChange = this.countChangeMinus(this.ID * -1, board,
+                Pair<Integer[], ArrayList<Move>> otherPlayerChange = this.countChangeMinus(this.ID * -1, board,
                         prevOtherPlayerScore, move);
-                Integer thisPlayerScore = thisPlayerChange.a;
-                Integer otherPlayerScore = otherPlayerChange.a;
+                Integer[] thisPlayerScore = thisPlayerChange.a;
+                Integer[] otherPlayerScore = otherPlayerChange.a;
                 ArrayList<Move> newPriorityMoves = thisPlayerChange.b;
                 newPriorityMoves.addAll(otherPlayerChange.b);
                 Integer[][] simulatedBoard = this.simulateMove(board, move.x, move.y, this.ID);
@@ -135,7 +140,7 @@ public class AgentService {
                     return move;
                 } else {
                     // If not won, go a layer deeper and calculate their move
-                    Move newMove = this.findTheirMove(simulatedBoard, depth + 1, maxDepth, alpha, beta,
+                    Move newMove = this.findMyMove(simulatedBoard, depth + 1, maxDepth, alpha, beta,
                             otherPlayerScore, thisPlayerScore, newPriorityMoves);
                     if (newMove.score == 0) {
                         break;
@@ -166,11 +171,17 @@ public class AgentService {
             // At max depth, calculate the score based on the number of lines of differing
             // lengths it has
             // this.counter+=1
-            int myScore = prevThisPlayerScore;
-            int theirScore = prevOtherPlayerScore;
-            return new Move();
+            // int myScore = prevThisPlayerScore;
+            // int theirScore = prevOtherPlayerScore;
             // TODO:
-            // return(sum(this.NEXT_PLAYER_WEIGHTS*myScore)-sum(this.CURRENT_PLAYER_WEIGHTS*theirScore)),[];
+            int sum = 0;
+            for (int index = 0; index < this.NEXT_PLAYER_WEIGHTS.length; index++) {
+                sum += this.NEXT_PLAYER_WEIGHTS[index] * prevOtherPlayerScore[index];
+            }
+            for (int index = 0; index < this.NEXT_PLAYER_WEIGHTS.length; index++) {
+                sum += this.NEXT_PLAYER_WEIGHTS[index] * prevOtherPlayerScore[index];
+            }
+            return new Move(sum);
         }
     }
 
@@ -178,170 +189,190 @@ public class AgentService {
     // simpler.
     // In hindsight, separating these two was a mistake, as a number of changes had
     // to be done to both functions
-    public Move findTheirMove(Integer[][] board, int depth, int maxDepth, int alpha, int beta, int prevThisPlayerScore,
-            int prevOtherPlayerScore, ArrayList<Move> priorityMoves) {
-        if(time()>(this.startTime+this.SEARCH_TIME)){return 0,None;}if(depth<maxDepth){validMoves=this.findMoves(board,priorityMoves.copy());bestScore=None;bestMove=();for(int move:validMoves){thisPlayerScore,priorityMoves1=this.countChangeAdd(this.ID*-1,board,prevThisPlayerScore.copy(),move);otherPlayerScore,priorityMoves2=this.countChangeMinus(this.ID,board,prevOtherPlayerScore.copy(),move);newPriorityMoves=priorityMoves1+priorityMoves2;simulatedBoard=this.simulateMove(board,move[1],move[0],this.ID*-1);if(thisPlayerScore[this.INDEXES[0]]>0 or thisPlayerScore[this.INDEXES[1]]>0 or thisPlayerScore[this.INDEXES[2]]>0){return-1000,move;}else{score,newMove=this.findMyMove(simulatedBoard,depth+1,maxDepth,alpha,beta,otherPlayerScore,thisPlayerScore,newPriorityMoves);if(score==None){break;}else{if(bestScore==None){bestScore=score;bestMove=move;}
-        // pick the minimum score
-        if(score<bestScore){bestScore=score;bestMove=move;}if(bestScore<=alpha){ // If the score is less than the
-                                                                                 // current max path, return the score
-                                                                                 // and trim the branch
-        break;}if(bestScore<beta){beta=bestScore;}}}if(time()>(this.startTime+this.SEARCH_TIME)){return 0,None;}else{return bestScore,bestMove;}}else{
-        // this.counter+=1
-        myScore=prevOtherPlayerScore;theirScore=prevThisPlayerScore;return(sum(this.CURRENT_PLAYER_WEIGHTS*myScore)-sum(this.NEXT_PLAYER_WEIGHTS*theirScore)),[];}
-    }
+    // public Move findTheirMove(Integer[][] board, int depth, int maxDepth, int
+    // alpha, int beta, Integer[] prevThisPlayerScore,
+    // Integer[] prevOtherPlayerScore, ArrayList<Move> priorityMoves) {
+    // if(time()>(this.startTime+this.SEARCH_TIME)){return
+    // 0,None;}if(depth<maxDepth){validMoves=this.findMoves(board,priorityMoves.copy());bestScore=None;bestMove=();for(int
+    // move:validMoves){thisPlayerScore,priorityMoves1=this.countChangeAdd(this.ID*-1,board,prevThisPlayerScore.copy(),move);otherPlayerScore,priorityMoves2=this.countChangeMinus(this.ID,board,prevOtherPlayerScore.copy(),move);newPriorityMoves=priorityMoves1+priorityMoves2;simulatedBoard=this.simulateMove(board,move[1],move[0],this.ID*-1);if(thisPlayerScore[this.INDEXES[0]]>0
+    // or thisPlayerScore[this.INDEXES[1]]>0 or
+    // thisPlayerScore[this.INDEXES[2]]>0){return-1000,move;}else{score,newMove=this.findMyMove(simulatedBoard,depth+1,maxDepth,alpha,beta,otherPlayerScore,thisPlayerScore,newPriorityMoves);if(score==None){break;}else{if(bestScore==None){bestScore=score;bestMove=move;}
+    // // pick the minimum score
+    // if(score<bestScore){bestScore=score;bestMove=move;}if(bestScore<=alpha){ //
+    // If the score is less than the
+    // // current max path, return the score
+    // // and trim the branch
+    // break;}if(bestScore<beta){beta=bestScore;}}}if(time()>(this.startTime+this.SEARCH_TIME)){return
+    // 0,None;}else{return bestScore,bestMove;}}else{
+    // // this.counter+=1
+    // myScore=prevOtherPlayerScore;theirScore=prevThisPlayerScore;return(sum(this.CURRENT_PLAYER_WEIGHTS*myScore)-sum(this.NEXT_PLAYER_WEIGHTS*theirScore)),[];}
+    // }
 
     // Returns a board with an additional square filled in at the x and y coords
     public Integer[][] simulateMove(Integer[][] board, int x, int y, int id) {
-        simulatedBoard = np.copy(board);
+        Integer[][] simulatedBoard = board.clone();
         simulatedBoard[y][x] = id;
         return simulatedBoard;
     }
 
     // Old count lines function, only used for the initial count as it's much slower
-    public int countLines(Integer[][] board, int id) {
-        horizontalScores=this.countLinesInDirection(board,this.horizontalCoords,id);verticalScores=this.countLinesInDirection(board,this.verticalCoords,id);downDiagScores=this.countLinesInDirection(board,this.downDiagCoords,id);upDiagScores=this.countLinesInDirection(board,this.upDiagCoords,id);totalScores=np.concatenate([(horizontalScores[0]+verticalScores[0]+downDiagScores[0]+upDiagScores[0]),(horizontalScores[1]+verticalScores[1]+downDiagScores[1]+upDiagScores[1]),(horizontalScores[2]+verticalScores[2]+downDiagScores[2]+upDiagScores[2])]);return totalScores; // Fix
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        // to
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        // have
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        // weights
+    public Integer[] countLines(Integer[][] board, int id) {
+        Integer[] horizontalScores = this.countLinesInDirection(board, this.horizontalCoords, id);
+        Integer[] verticalScores = this.countLinesInDirection(board, this.verticalCoords, id);
+        Integer[] downDiagScores = this.countLinesInDirection(board, this.downDiagCoords, id);
+        Integer[] upDiagScores = this.countLinesInDirection(board, this.upDiagCoords, id);
+
+        Integer[] totalScores = new Integer[horizontalScores.length];
+        for (int index = 0; index < horizontalScores.length; index++) {
+            totalScores[index] = horizontalScores[index] + verticalScores[index] + upDiagScores[index]
+                    + downDiagScores[index];
+        }
+        return totalScores; // Fix
+                            // to
+                            // have
+                            // weights
     }
 
     // Goes through row by row, and measures the size of every consectutive line and
     // whether it's open ended or not
-    public void countLinesInDirection (Integer[][] board, ArrayList<Integer> orderedItems, int id){
-        scoresOpen = np.zeros(this.X_IN_A_LINE+1);
-        scoresSemi = np.zeros(this.X_IN_A_LINE+1);
-        scoresDead = np.zeros(this.X_IN_A_LINE+1);
-        length = 0;
-        openEnded = False;
-        lastNumber = id * - 1; // Represents the last number observed, to see if lines are open ended or not. 
-        // At the start of every line it defaults to the inverse of the id, so lines that start at the edge of the board are not open ended 
-        for (int row = 0; row < len(orderedItems); row++){
-            for (int column = 0; column < len(orderedItems[row]); column++){
-                int x,y = orderedItems[row][column];
+    public Integer[] countLinesInDirection(Integer[][] board,
+            ArrayList<ArrayList<Pair<Integer, Integer>>> orderedItems,
+            int id) {
+        Integer[] scoresOpen = new Integer[this.X_IN_A_LINE + 1];
+        Integer[] scoresSemi = new Integer[this.X_IN_A_LINE + 1];
+        Integer[] scoresDead = new Integer[this.X_IN_A_LINE + 1];
+        int length = 0;
+        boolean openEnded = false;
+        int lastNumber = id * -1; // Represents the last number observed, to see if lines are open ended or not.
+        // At the start of every line it defaults to the inverse of the id, so lines
+        // that start at the edge of the board are not open ended
+        for (ArrayList<Pair<Integer, Integer>> line : orderedItems) {
+            for (Pair<Integer, Integer> cell : line) {
+                int x = cell.a;
+                int y = cell.b;
                 // print(x,y,length)
-                if (board[y][x] == id){
-                    if (length == 0 and lastNumber == 0){
-                        openEnded = True;
+                if (board[y][x] == id) {
+                    if (length == 0 && lastNumber == 0) {
+                        openEnded = true;
                     }
                     length += 1;
-                }
-                else if (length > 0){
-                    if (openEnded and board[y][x] == 0){
+                } else if (length > 0) {
+                    if (openEnded && board[y][x] == 0) {
                         scoresOpen[length] += 1;
                     }
                 }
 
-    else if (openEnded or board[y][x] == 0){
-                        scoresSemi[length] += 1
-    }
-                    else
-                        {scoresDead[length] += 1;}
-                    length = 0;
-                    openEnded = False;
-}
-                lastNumber = board[y][x];
-            if (length > 0){
-                if (openEnded){
-                    scoresSemi[length] += 1;}
-                }
-                else{
+                else if (openEnded || board[y][x] == 0) {
+                    scoresSemi[length] += 1;
+                } else {
                     scoresDead[length] += 1;
                 }
-                openEnded = False;
+                length = 0;
+                openEnded = false;
+            }
+            if (length > 0) {
+                if (openEnded) {
+                    scoresSemi[length] += 1;
+                }
+            } else {
+                scoresDead[length] += 1;
+            }
+            openEnded = false;
             length = 0;
-            lastNumber = id * - 1;
+            lastNumber = id * -1;
         }
-        return [scoresDead, scoresSemi, scoresOpen];
+        Integer[] result = Stream.of(scoresDead, scoresSemi, scoresOpen).flatMap(Stream::of).toArray(Integer[]::new);
+        return result;
+
     }
 
     // Counts how the scores change when adding the move to the board.
     // Extends and joins any lines that attach to the move.
-    public void countChangeAdd (int id, Integer[][] prevBoard, int prevScore, int move){
-        this.priorityMoves = [];
-        score = prevScore;
-        y = move[0];
-        x = move[1];
-        horLength = 1;
-        verLength = 1;
-        upDiLength = 1;
-        doDiLength = 1;
-        horOpeness = 0;
-        verOpeness = 0;
-        upDiOpeness = 0;
-        doDiOpeness = 0;
-        prevIndex, horLength, horOpeness = this.calculateNewLines(prevBoard, id, x, y, score, horLength, horOpeness, 1, 0);
+    public Pair<Integer[], ArrayList<Move>> countChangeAdd(int id, Integer[][] prevBoard, Integer[] prevScore,
+            Move move) {
+        this.priorityMoves = new ArrayList<Move>();
+        Integer[] score = prevScore.clone();
+        Integer y = move.y, x = move.x,
+                horLength = 1, verLength = 1, upDiLength = 1, doDiLength = 1, horOpeness = 0, verOpeness = 0,
+                upDiOpeness = 0, doDiOpeness = 0, prevIndex;
+        // TODO: Does openness pass by value or reference, should pass by refernce
+        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, horLength, horOpeness, 1, 0);
         score[prevIndex] -= 1;
-        prevIndex, horLength, horOpeness = this.calculateNewLines(prevBoard, id, x, y, score, horLength, horOpeness, -1, 0);
+        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, horLength, horOpeness, -1, 0);
         score[prevIndex] -= 1;
-        prevIndex, verLength, verOpeness = this.calculateNewLines(prevBoard, id, x, y, score, verLength, verOpeness, 0, 1);
+        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, verLength, verOpeness, 0, 1);
         score[prevIndex] -= 1;
-        prevIndex, verLength, verOpeness = this.calculateNewLines(prevBoard, id, x, y, score, verLength, verOpeness, 0, -1);
+        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, verLength, verOpeness, 0, -1);
         score[prevIndex] -= 1;
-        prevIndex, doDiLength, doDiOpeness = this.calculateNewLines(prevBoard, id, x, y, score, doDiLength, doDiOpeness, 1, -1);
+        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, doDiLength, doDiOpeness, 1, -1);
         score[prevIndex] -= 1;
-        prevIndex, doDiLength, doDiOpeness = this.calculateNewLines(prevBoard, id, x, y, score, doDiLength, doDiOpeness, -1, 1);
+        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, doDiLength, doDiOpeness, -1, 1);
         score[prevIndex] -= 1;
-        prevIndex, upDiLength, upDiOpeness = this.calculateNewLines(prevBoard, id, x, y, score, upDiLength, upDiOpeness, 1, 1);
+        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, upDiLength, upDiOpeness, 1, 1);
         score[prevIndex] -= 1;
-        prevIndex, upDiLength, upDiOpeness = this.calculateNewLines(prevBoard, id, x, y, score, upDiLength, upDiOpeness, -1, -1);
+        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, upDiLength, upDiOpeness, -1, -1);
         score[prevIndex] -= 1;
-        horLength = min(horLength, 5);// Stops a 6 long line from breaking the system
-        verLength = min(verLength, 5);// This can occur when 2 adding to 5 or more are joined together. E.g 2 3's
-        doDiLength = min(doDiLength, 5);
-        upDiLength = min(upDiLength, 5);
-        score[(horOpeness * (this.X_IN_A_LINE+1)) + horLength] += 1;
-        score[(verOpeness * (this.X_IN_A_LINE+1)) + verLength] += 1;
-        score[(doDiOpeness * (this.X_IN_A_LINE+1)) + doDiLength] += 1;
-        score[(upDiOpeness * (this.X_IN_A_LINE+1)) + upDiLength] += 1;
-        return score, this.priorityMoves;
+        horLength = Math.min(horLength, 5);// Stops a 6 long line from breaking the system
+        verLength = Math.min(verLength, 5);// This can occur when 2 adding to 5 or more are joined together. E.g 2 3's
+        doDiLength = Math.min(doDiLength, 5);
+        upDiLength = Math.min(upDiLength, 5);
+        score[(horOpeness * (this.X_IN_A_LINE + 1)) + horLength] += 1;
+        score[(verOpeness * (this.X_IN_A_LINE + 1)) + verLength] += 1;
+        score[(doDiOpeness * (this.X_IN_A_LINE + 1)) + doDiLength] += 1;
+        score[(upDiOpeness * (this.X_IN_A_LINE + 1)) + upDiLength] += 1;
+        return new Pair<Integer[], ArrayList<Move>>(score, this.priorityMoves);
     }
 
     // For each direction, searches how long the new line is, subtracts one score
     // from length-1
     // And adds 1 score to the length
-    public void calculateNewLines (Integer[][] board, int id, int x, int y, int prevScore, int length, int openess, int xChange, int yChange){
-        for i in range(1, this.X_IN_A_LINE+1){// Check positive horizontal
-            newX = x + (xChange * i);
-            newY = y + (yChange * i);
-            if (newX < this.BOARD_SIZE and newY < this.BOARD_SIZE and newX >= 0 and newY >= 0){
-                value = board[newY][newX];
-                if (value == 0){
+    public Integer calculateNewLines(Integer[][] board, int id, int x, int y, Integer[] prevScore, Integer length,
+            Integer openess, int xChange, int yChange) {
+        for (int i = 1; i < this.X_IN_A_LINE + 1; i++) {// Check positive horizontal
+            int newX = x + (xChange * i);
+            int newY = y + (yChange * i);
+            if (newX < this.BOARD_SIZE && newY < this.BOARD_SIZE && newX >= 0 && newY >= 0) {
+                int value = board[newY][newX];
+                if (value == 0) {
                     // If it is now semi open. The previous line was open
-                    //  this.priorityMoves.append(tuple(newY, newX))
-                    this.priorityMoves.append((newY, newX));
-                    return ((i-1)+((this.X_IN_A_LINE+1)*2)), length+(i-1), openess+1;
-                }
-                else if (value != id){
+                    // this.priorityMoves.append(tuple(newY, newX))
+                    this.priorityMoves.add(new Move(newY, newX));
+                    length = length + (i - 1);
+                    openess = openess + 1;
+                    return ((i - 1) + ((this.X_IN_A_LINE + 1) * 2));
+                } else if (value != id) {
                     // If it is now closed, the previous line was semi open
-                    return ((i-1)+(this.X_IN_A_LINE+1)), length+(i-1), openess;
+                    length = length + (i - 1);
+                    return ((i - 1) + (this.X_IN_A_LINE + 1));
                 }
-            }
-            else{
-                return ((i-1)+(this.X_IN_A_LINE+1)), length+(i-1), openess;
+            } else {
+                length = length + (i - 1);
+                return ((i - 1) + (this.X_IN_A_LINE + 1));
             }
         }
     }
 
     // Finds lines that are no longer open ended and adjusts the score accordingly
-    public void countChangeMinus (id, prevBoard, prevScore, move){
-        this.priorityMoves = [];
-        score = prevScore;
-        y = move[0];
-        x = move[1];
-        for (int[] xyChange : new Integer[]{(-1, -1), (-1, 0), (-1, 1), (0, -1), (1, 1), (1, -1), (1, 0), (1, 1)}){
-        //  for xChange in range (-1, 2):
-        //      for yChange in range (-1, 2):
-                //  print(this.calculateOldLines(prevBoard, id, x, y, score, xChange, yChange))
-            prevIndex, newIndex = this.calculateOldLines(prevBoard, id, x, y, score, xChange, yChange);
-            //  print(prevIndex, newIndex, "returned")
-            score[prevIndex] -= 1;
-            score[newIndex] += 1;
+    public Pair<Integer[], Integer[]> countChangeMinus(int id, Integer[][] prevBoard, Integer[] prevScore, Move move) {
+        this.priorityMoves = new ArrayList<Move>();
+        // TODO: Reset priority moves twice?
+        Integer[] score = prevScore.clone();
+        int y = move.y;
+        int x = move.x;
+        for (Integer[] xyChange : new Integer[][] { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 1, 1 }, { 1, -1 },
+                { 1, 0 }, { 1, 1 } }) {
+            // print(this.calculateOldLines(prevBoard, id, x, y, score, xChange, yChange))
+            Pair<Integer, Integer> indexes = this.calculateOldLines(prevBoard, id, x, y, score, xyChange[0],
+                    xyChange[0]);
+            // print(prevIndex, newIndex, "returned")
+            score[indexes.a] -= 1;
+            score[indexes.b] += 1;
         }
-        return score, this.priorityMoves;
+        return new Pair<Integer[], Integer[]>(score, this.priorityMoves);
     }
 
     // Finds the old index of the lines and returns a new index for them as well
-    public void calculateOldLines (board, id, x, y, prevScore, xChange, yChange) {
+    public Pair<Integer, Integer> calculateOldLines (Integer[] board, int id, int x, int y, Integer[] prevScore, int xChange, int yChange) {
         // print("Changes", xChange, yChange)
         for (int i = 1; i < this.X_IN_A_LINE+1; i++){// Check positive horizontal
             newX = x + (xChange * i);

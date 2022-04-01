@@ -17,6 +17,12 @@ public class Move {
         this.score = 0;
     }
 
+    public Move(int sum) {
+        this.x = 0;
+        this.y = 0;
+        this.score = sum;
+    }
+
     public Move() {
         this.x = 0;
         this.y = 0;
