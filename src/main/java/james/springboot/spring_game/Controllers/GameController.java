@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import james.springboot.spring_game.Move;
 import james.springboot.spring_game.Services.AgentService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,6 +25,7 @@ import james.springboot.spring_game.Services.AgentService;
 @RestController
 @CrossOrigin("http://localhost:3000")
 @RequestMapping("/game")
+@Log4j2
 public class GameController {
     private final GameService gameService;
     private final AgentService agentService;
@@ -50,14 +52,15 @@ public class GameController {
         Integer y = body.get("y");
         Integer playerId = body.get("player");
         try {
-            int a=0;
-            gameService.playMove(1, y, x);
-            a=1;
+            try {
+                gameService.playMove(1, y, x);
+            } catch (WrongPlayerException e) {
+                log.error("Human played when it was not their go");
+            }
             //Below line plays a move. Need to do a copy of the board?
-            Move move = agentService.move((Integer[][]) gameService.getBoard(false).get("board"));
-            a=1;
-            gameService.playMove(2, move.x, move.y);
-            a=1;
+            int[][] boardDeepCopy = ((int[][]) gameService.getBoard(false).get("board"));
+            Move move = agentService.move(boardDeepCopy);
+            gameService.playMove(2, move.y, move.x);
             return new ResponseEntity<>("Played move", HttpStatus.OK);
         } catch (NullPointerException e) {
             return new ResponseEntity<>("One or more fields missing, needs x, y and player",

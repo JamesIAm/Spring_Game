@@ -21,7 +21,7 @@ public class GameService {
     private int winner = 0;
     private int currentPlayer;
 
-    private Integer[][] board = new Integer[BOARD_SIZE][BOARD_SIZE];
+    private int[][] board = new int[BOARD_SIZE][BOARD_SIZE];
     // 0 = empty, 1 = player-1, 2 = player-2
 
     public GameService() {
@@ -29,10 +29,10 @@ public class GameService {
     }
 
     public void resetBoard() {
-        board = new Integer[BOARD_SIZE][BOARD_SIZE];
-        for (Integer[] row: board) {
-            Arrays.fill(row, 0);
-        }
+        board = new int[BOARD_SIZE][BOARD_SIZE];
+//        for (Integer[] row: board) {
+//            Arrays.fill(row, 0);
+//        }
         // Initialises board of BOARD_SIZE to be all 0s
         currentPlayer = 1;
         winner = 0;
@@ -45,10 +45,11 @@ public class GameService {
             }
         }
         HashMap<String, Object> toReturn = new HashMap<>();
-        toReturn.put("board", this.board.clone());
+        toReturn.put("board", Utilities.deepCopyBoard(board, BOARD_SIZE));
         toReturn.put("currentPlayer", this.currentPlayer);
         return toReturn;
     }
+
 
     public void playMove(@NonNull Integer playerId, @NonNull Integer y, @NonNull Integer x)
             throws InvalidMoveException, GameOverException, WrongPlayerException {
