@@ -7,9 +7,12 @@ import java.util.stream.Stream;
 
 import james.springboot.spring_game.Move;
 import james.springboot.spring_game.Pair;
+import james.springboot.spring_game.Triplet;
 import lombok.Getter;
+import org.springframework.stereotype.Service;
 
 // @Getter
+@Service
 public class AgentService {
     private final Integer ID = 1;
     private final Integer BOARD_SIZE = 10;
@@ -29,7 +32,7 @@ public class AgentService {
     // in a row (enclosed on one side), and 5 in a row (not enclosed)
     private final Integer SEARCH_TIME = 5; // How many seconds the system searches before returning it's best solution
     // private final Integer counter = 0
-    private final ArrayList<Move> priorityMoves = new ArrayList<Move>();
+    private ArrayList<Move> priorityMoves = new ArrayList<Move>();
     // Contains a list of moves that should be searched first (continuations of the
     // line of the last move played)
     private ArrayList<ArrayList<Pair<Integer, Integer>>> horizontalCoords = new ArrayList<>();
@@ -72,7 +75,7 @@ public class AgentService {
     // Iterates depth of search so if it runs out of time, it will default to the
     // last found best move
     // If the program throws any error it defaults to a valid value
-    public Move move(Integer[][] board) {
+    public Move move(Integer[][] board) throws Exception {
         try {
             this.startTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
             Move prevBestMove = new Move(1, 1, 0);
@@ -107,6 +110,7 @@ public class AgentService {
             }
 
         }
+        throw new Exception("Unable to find a move");
     }
 
     // Finds the next move for the current player. This will call findTheirMove,
@@ -115,7 +119,7 @@ public class AgentService {
     // It searches depth first, and uses alpha beta pruning to cut down on the
     // number of searched nodes
     public Move findMyMove(Integer[][] board, int depth, int maxDepth, int alpha, int beta,
-            Integer[] prevThisPlayerScore, Integer[] prevOtherPlayerScore, ArrayList<Move> priorityMoves) {
+            Integer[] prevThisPlayerScore, Integer[] prevOtherPlayerScore, ArrayList<Move> priorityMoves) throws Exception {
         if (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) > (this.startTime + this.SEARCH_TIME)) {
             return new Move();
         }
@@ -183,6 +187,7 @@ public class AgentService {
             }
             return new Move(sum);
         }
+        return new Move();
     }
 
     // Almost identical to findMyMove, but separated out to make tracking the ID
@@ -289,29 +294,46 @@ public class AgentService {
     // Counts how the scores change when adding the move to the board.
     // Extends and joins any lines that attach to the move.
     public Pair<Integer[], ArrayList<Move>> countChangeAdd(int id, Integer[][] prevBoard, Integer[] prevScore,
-            Move move) {
+            Move move) throws Exception {
         this.priorityMoves = new ArrayList<Move>();
         Integer[] score = prevScore.clone();
         Integer y = move.y, x = move.x,
                 horLength = 1, verLength = 1, upDiLength = 1, doDiLength = 1, horOpeness = 0, verOpeness = 0,
-                upDiOpeness = 0, doDiOpeness = 0, prevIndex;
+                upDiOpeness = 0, doDiOpeness = 0;
+        Triplet<Integer, Integer, Integer> prevIndexLengthOpeness;
         // TODO: Does openness pass by value or reference, should pass by refernce
-        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, horLength, horOpeness, 1, 0);
-        score[prevIndex] -= 1;
-        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, horLength, horOpeness, -1, 0);
-        score[prevIndex] -= 1;
-        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, verLength, verOpeness, 0, 1);
-        score[prevIndex] -= 1;
-        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, verLength, verOpeness, 0, -1);
-        score[prevIndex] -= 1;
-        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, doDiLength, doDiOpeness, 1, -1);
-        score[prevIndex] -= 1;
-        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, doDiLength, doDiOpeness, -1, 1);
-        score[prevIndex] -= 1;
-        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, upDiLength, upDiOpeness, 1, 1);
-        score[prevIndex] -= 1;
-        prevIndex = this.calculateNewLines(prevBoard, id, x, y, score, upDiLength, upDiOpeness, -1, -1);
-        score[prevIndex] -= 1;
+        prevIndexLengthOpeness = this.calculateNewLines(prevBoard, id, x, y, score, horLength, horOpeness, 1, 0);
+        score[prevIndexLengthOpeness.a] -= 1;
+        horLength = prevIndexLengthOpeness.b;
+        horOpeness = prevIndexLengthOpeness.c;
+        prevIndexLengthOpeness = this.calculateNewLines(prevBoard, id, x, y, score, horLength, horOpeness, -1, 0);
+        score[prevIndexLengthOpeness.a] -= 1;
+        horLength = prevIndexLengthOpeness.b;
+        horOpeness = prevIndexLengthOpeness.c;
+        prevIndexLengthOpeness = this.calculateNewLines(prevBoard, id, x, y, score, verLength, verOpeness, 0, 1);
+        score[prevIndexLengthOpeness.a] -= 1;
+        verLength = prevIndexLengthOpeness.b;
+        verOpeness = prevIndexLengthOpeness.c;
+        prevIndexLengthOpeness = this.calculateNewLines(prevBoard, id, x, y, score, verLength, verOpeness, 0, -1);
+        score[prevIndexLengthOpeness.a] -= 1;
+        verLength = prevIndexLengthOpeness.b;
+        verOpeness = prevIndexLengthOpeness.c;
+        prevIndexLengthOpeness = this.calculateNewLines(prevBoard, id, x, y, score, doDiLength, doDiOpeness, 1, -1);
+        score[prevIndexLengthOpeness.a] -= 1;
+        doDiLength = prevIndexLengthOpeness.b;
+        doDiOpeness = prevIndexLengthOpeness.c;
+        prevIndexLengthOpeness = this.calculateNewLines(prevBoard, id, x, y, score, doDiLength, doDiOpeness, -1, 1);
+        score[prevIndexLengthOpeness.a] -= 1;
+        doDiLength = prevIndexLengthOpeness.b;
+        doDiOpeness = prevIndexLengthOpeness.c;
+        prevIndexLengthOpeness = this.calculateNewLines(prevBoard, id, x, y, score, upDiLength, upDiOpeness, 1, 1);
+        score[prevIndexLengthOpeness.a] -= 1;
+        upDiLength = prevIndexLengthOpeness.b;
+        upDiOpeness = prevIndexLengthOpeness.c;
+        prevIndexLengthOpeness = this.calculateNewLines(prevBoard, id, x, y, score, upDiLength, upDiOpeness, -1, -1);
+        score[prevIndexLengthOpeness.a] -= 1;
+        upDiLength = prevIndexLengthOpeness.b;
+        upDiOpeness = prevIndexLengthOpeness.c;
         horLength = Math.min(horLength, 5);// Stops a 6 long line from breaking the system
         verLength = Math.min(verLength, 5);// This can occur when 2 adding to 5 or more are joined together. E.g 2 3's
         doDiLength = Math.min(doDiLength, 5);
@@ -326,8 +348,8 @@ public class AgentService {
     // For each direction, searches how long the new line is, subtracts one score
     // from length-1
     // And adds 1 score to the length
-    public Integer calculateNewLines(Integer[][] board, int id, int x, int y, Integer[] prevScore, Integer length,
-            Integer openess, int xChange, int yChange) {
+    public Triplet<Integer, Integer, Integer> calculateNewLines(Integer[][] board, int id, int x, int y, Integer[] prevScore, Integer length,
+                                                                Integer openess, int xChange, int yChange) throws Exception {
         for (int i = 1; i < this.X_IN_A_LINE + 1; i++) {// Check positive horizontal
             int newX = x + (xChange * i);
             int newY = y + (yChange * i);
@@ -339,21 +361,23 @@ public class AgentService {
                     this.priorityMoves.add(new Move(newY, newX));
                     length = length + (i - 1);
                     openess = openess + 1;
-                    return ((i - 1) + ((this.X_IN_A_LINE + 1) * 2));
+                    return new Triplet<>((i - 1) + ((this.X_IN_A_LINE + 1) * 2), length, openess);
                 } else if (value != id) {
                     // If it is now closed, the previous line was semi open
                     length = length + (i - 1);
-                    return ((i - 1) + (this.X_IN_A_LINE + 1));
+                    return new Triplet<>( (i - 1) + (this.X_IN_A_LINE + 1), length, openess);
                 }
             } else {
                 length = length + (i - 1);
-                return ((i - 1) + (this.X_IN_A_LINE + 1));
+                return new Triplet<>( (i - 1) + (this.X_IN_A_LINE + 1), length, openess);
             }
         }
+        throw new Exception("Failed in calculate new lines function");
     }
 
     // Finds lines that are no longer open ended and adjusts the score accordingly
-    public Pair<Integer[], Integer[]> countChangeMinus(int id, Integer[][] prevBoard, Integer[] prevScore, Move move) {
+    public Pair<Integer[], ArrayList<Move>> countChangeMinus(int id, Integer[][] prevBoard, Integer[] prevScore,
+            Move move) throws Exception {
         this.priorityMoves = new ArrayList<Move>();
         // TODO: Reset priority moves twice?
         Integer[] score = prevScore.clone();
@@ -368,27 +392,27 @@ public class AgentService {
             score[indexes.a] -= 1;
             score[indexes.b] += 1;
         }
-        return new Pair<Integer[], Integer[]>(score, this.priorityMoves);
+        return new Pair<>(score, this.priorityMoves);
     }
 
     // Finds the old index of the lines and returns a new index for them as well
-    public Pair<Integer, Integer> calculateOldLines (Integer[] board, int id, int x, int y, Integer[] prevScore, int xChange, int yChange) {
+    public Pair<Integer, Integer> calculateOldLines (Integer[][] board, int id, int x, int y, Integer[] prevScore, Integer xChange, Integer yChange) throws Exception {
         // print("Changes", xChange, yChange)
         for (int i = 1; i < this.X_IN_A_LINE+1; i++){// Check positive horizontal
-            newX = x + (xChange * i);
-            newY = y + (yChange * i);
+            int newX = x + (xChange * i);
+            int newY = y + (yChange * i);
             // print(newY, newX)
             if (newX < this.BOARD_SIZE && newY < this.BOARD_SIZE && newX >= 0 && newY >= 0){
-                value = board[newY][newX];
+                int value = board[newY][newX];
                 if (value == 0){
                     // If it is now semi open. The previous line was open
-                    this.priorityMoves.append((newY, newX));
+                    this.priorityMoves.add(new Move(newY, newX));
                     //  print(this.priorityMoves)
-                    return (i-1)+((this.X_IN_A_LINE+1)*2), (i-1)+((this.X_IN_A_LINE+1)*1);
+                    return new Pair<>((i-1)+((this.X_IN_A_LINE+1)*2), (i-1)+((this.X_IN_A_LINE+1)*1));
                 }
                 else if (value != id){
                     // If it is now closed, the previous line was semi open
-                    return ((i-1)+(this.X_IN_A_LINE+1)), (i-1);
+                    return new Pair<>(((i-1)+(this.X_IN_A_LINE+1)), (i-1));
                 }
                 //  else:
                 //      print(value, i)
@@ -397,9 +421,10 @@ public class AgentService {
             }
             else {
                 //  print(((i-1)+(this.X_IN_A_LINE+1)), (i-1))
-                return ((i-1)+(this.X_IN_A_LINE+1)), (i-1);
+                return new Pair<>(((i-1)+(this.X_IN_A_LINE+1)), (i-1));
             }
         }
+        throw new Exception("Exception in calculate old lines");
     }
 
     // Finds moves that are valid to explore, only finds moves plus minus one of the
@@ -407,14 +432,11 @@ public class AgentService {
     // Starts with any lines that were made longer or shorter by the last move.
     // (From priorityMoves)
     public ArrayList<Move> findMoves (Integer[][] board, ArrayList<Move> priorityMoves){
-        minX = this.BOARD_SIZE;
-        minY = this.BOARD_SIZE;
-        maxX = 0;
-        maxY = 0;
-        ArrayList<Move> validMoves = new ArrayList<>();
-        for (Move move : priorityMoves) {
-            validMoves.add(move);
-        }
+        int minX = this.BOARD_SIZE;
+        int minY = this.BOARD_SIZE;
+        int maxX = 0;
+        int maxY = 0;
+        ArrayList<Move> validMoves = new ArrayList<>(priorityMoves);
         for (int y = 0; y < this.BOARD_SIZE; y++){
             for (int x = 0; x < this.BOARD_SIZE; x++){
                 if (board[y][x] != 0){
@@ -430,23 +452,24 @@ public class AgentService {
                 }
             }
         }
-        minX = max(minX-this.SEARCH_RADIUS, 0);
-        minY = max(minY-this.SEARCH_RADIUS, 0);
-        maxX = min(maxX+this.SEARCH_RADIUS, this.BOARD_SIZE);
-        maxY = min(maxY+this.SEARCH_RADIUS, this.BOARD_SIZE);
+        minX = Math.max(minX-this.SEARCH_RADIUS, 0);
+        minY = Math.max(minY-this.SEARCH_RADIUS, 0);
+        maxX = Math.min(maxX+this.SEARCH_RADIUS, this.BOARD_SIZE);
+        maxY = Math.min(maxY+this.SEARCH_RADIUS, this.BOARD_SIZE);
         for (int y = minY; y < maxY; y++){
             for (int x = minX; x < maxX; x++){
                 if (board[y][x] == 0){//  and (y,x) not in validMoves):
-                    validMoves.append((y,x));
+                    validMoves.add(new Move(y,x));
                 }
             }
         }
-        if (validMoves == []){
+        if (validMoves.size() == 0){
             if (maxX > minX){
-                return [];
+                return new ArrayList<>();
             }
             else{
-                return [(1,1)];// Set default starting move
+                ArrayList<Move> moves = new ArrayList<>();
+                moves.add(new Move(1,1));// Set default starting move
             }
         }
         return validMoves;

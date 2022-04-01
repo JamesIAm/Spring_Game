@@ -2,6 +2,8 @@ package james.springboot.spring_game.Controllers;
 
 import java.util.HashMap;
 
+import james.springboot.spring_game.Move;
+import james.springboot.spring_game.Services.AgentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,22 +19,25 @@ import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidMoveException;
 import james.springboot.spring_game.Exceptions.WrongPlayerException;
 import james.springboot.spring_game.Services.GameService;
+import james.springboot.spring_game.Services.AgentService;
 
 @RestController
 @CrossOrigin("http://localhost:3000")
 @RequestMapping("/game")
 public class GameController {
-    private GameService gameService;
+    private final GameService gameService;
+    private final AgentService agentService;
 
-    public GameController(GameService gameService) {
+    public GameController(GameService gameService, AgentService agentService) {
         this.gameService = gameService;
+        this.agentService = agentService;
     }
 
     @GetMapping("/getState/{gameOver}")
     public ResponseEntity<HashMap<String, Object>> getGameState(@PathVariable("gameOver") Boolean gameOver) {
         try {
             HashMap<String, Object> gameState = gameService.getBoard(gameOver);
-            return new ResponseEntity<HashMap<String, Object>>(gameState, HttpStatus.OK);
+            return new ResponseEntity<>(gameState, HttpStatus.OK);
         } catch (GameOverException e) {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED, e.getMessage());
         }
@@ -47,14 +52,19 @@ public class GameController {
         try {
 
             gameService.playMove(playerId, y, x);
-            return new ResponseEntity<String>("Played move", HttpStatus.OK);
+
+            Move move = agentService.move((Integer[][]) gameService.getBoard(false).get("board"));
+            gameService.playMove(2, move.x, move.y);
+            return new ResponseEntity<>("Played move", HttpStatus.OK);
         } catch (NullPointerException e) {
-            return new ResponseEntity<String>("One or more fields missing, needs x, y and player",
+            return new ResponseEntity<>("One or more fields missing, needs x, y and player",
                     HttpStatus.BAD_REQUEST);
         } catch (GameOverException e) {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED, e.getMessage());
         } catch (WrongPlayerException | InvalidMoveException e) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

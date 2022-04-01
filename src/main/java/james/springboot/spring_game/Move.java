@@ -3,7 +3,7 @@ package james.springboot.spring_game;
 public class Move {
     public final int x;
     public final int y;
-    public final int score;
+    public int score;
 
     public Move(int x, int y, int score) {
         this.x = x;

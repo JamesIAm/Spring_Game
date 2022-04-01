@@ -9,6 +9,7 @@ const BoardRow = ({
 	gameWinner,
 	setGameWinner,
 }) => {
+	console.log(row);	
 	return (
 		<tr row={rowKey}>
 			{row.map((cell, columnKey) => {

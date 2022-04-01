@@ -16,6 +16,7 @@ const Board = () => {
 					(gameWinner !== 0 || gameOver).toString()
 			)
 			.then((res) => {
+				console.log(res)
 				setBoardState(res.data.board);
 				setPlayer(res.data.currentPlayer);
 			})
