@@ -50,11 +50,14 @@ public class GameController {
         Integer y = body.get("y");
         Integer playerId = body.get("player");
         try {
-
-            gameService.playMove(playerId, y, x);
-
+            int a=0;
+            gameService.playMove(1, y, x);
+            a=1;
+            //Below line plays a move. Need to do a copy of the board?
             Move move = agentService.move((Integer[][]) gameService.getBoard(false).get("board"));
+            a=1;
             gameService.playMove(2, move.x, move.y);
+            a=1;
             return new ResponseEntity<>("Played move", HttpStatus.OK);
         } catch (NullPointerException e) {
             return new ResponseEntity<>("One or more fields missing, needs x, y and player",

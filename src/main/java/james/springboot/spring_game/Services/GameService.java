@@ -45,7 +45,7 @@ public class GameService {
             }
         }
         HashMap<String, Object> toReturn = new HashMap<>();
-        toReturn.put("board", this.board);
+        toReturn.put("board", this.board.clone());
         toReturn.put("currentPlayer", this.currentPlayer);
         return toReturn;
     }

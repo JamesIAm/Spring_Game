@@ -3,16 +3,19 @@ package james.springboot.spring_game.Services;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import james.springboot.spring_game.Move;
 import james.springboot.spring_game.Pair;
 import james.springboot.spring_game.Triplet;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 // @Getter
 @Service
+@Log4j2
 public class AgentService {
     private final Integer ID = 1;
     private final Integer BOARD_SIZE = 10;
@@ -99,6 +102,7 @@ public class AgentService {
             // print("Counter = ", this.counter)
             return bestMove;
         } catch (Exception e) {
+            log.error("Agent main loop error: " + e.toString());
             // print("Error occurred, default value returned\nError -", e)// Logs occurance
             // of an error
             for (int x = 0; x < this.BOARD_SIZE; x++) {
@@ -151,11 +155,11 @@ public class AgentService {
                     } else {
                         // Initialise the best score
                         if (bestMove.score == 0) {
-                            bestMove = newMove;
+                            bestMove = move;
                         }
                         // Update the best score if it's higher than the current best
                         if (newMove.score > bestMove.score) {
-                            bestMove = newMove;
+                            bestMove = move;
                         }
                         if (bestMove.score >= beta) {
                             break;
@@ -246,6 +250,9 @@ public class AgentService {
         Integer[] scoresOpen = new Integer[this.X_IN_A_LINE + 1];
         Integer[] scoresSemi = new Integer[this.X_IN_A_LINE + 1];
         Integer[] scoresDead = new Integer[this.X_IN_A_LINE + 1];
+        Arrays.fill(scoresOpen, 0);
+        Arrays.fill(scoresSemi, 0);
+        Arrays.fill(scoresDead, 0);
         int length = 0;
         boolean openEnded = false;
         int lastNumber = id * -1; // Represents the last number observed, to see if lines are open ended or not.
@@ -459,7 +466,7 @@ public class AgentService {
         for (int y = minY; y < maxY; y++){
             for (int x = minX; x < maxX; x++){
                 if (board[y][x] == 0){//  and (y,x) not in validMoves):
-                    validMoves.add(new Move(y,x));
+                    validMoves.add(new Move(x,y));
                 }
             }
         }
