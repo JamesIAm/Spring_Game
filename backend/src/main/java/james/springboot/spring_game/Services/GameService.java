@@ -1,7 +1,5 @@
 package james.springboot.spring_game.Services;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import org.springframework.stereotype.Service;
@@ -11,8 +9,6 @@ import james.springboot.spring_game.Exceptions.InvalidMoveException;
 import james.springboot.spring_game.Exceptions.WrongPlayerException;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-
-import static java.rmi.server.LogStream.log;
 
 @Service
 @Log4j2

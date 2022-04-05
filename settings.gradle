@@ -6,3 +6,6 @@ pluginManagement {
 	}
 }
 rootProject.name = 'spring_game'
+include "frontend"
+include "backend"
+include "prometheus"
