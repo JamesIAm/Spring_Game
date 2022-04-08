@@ -1,25 +1,18 @@
 package james.springboot.spring_game.Controllers;
 
-import java.util.HashMap;
-
-import james.springboot.spring_game.Move;
-import james.springboot.spring_game.Services.AgentService;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-
 import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidMoveException;
 import james.springboot.spring_game.Exceptions.WrongPlayerException;
+import james.springboot.spring_game.Models.Move;
+import james.springboot.spring_game.Services.AgentService;
 import james.springboot.spring_game.Services.GameService;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.HashMap;
 
 @RestController
 @CrossOrigin("http://localhost:3000")

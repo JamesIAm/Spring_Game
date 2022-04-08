@@ -1,4 +1,5 @@
-package james.springboot.spring_game;
+package james.springboot.spring_game.Models;
+
 public class Triplet<Type1, Type2, Type3> {
     public Type1 a;
     public Type2 b;

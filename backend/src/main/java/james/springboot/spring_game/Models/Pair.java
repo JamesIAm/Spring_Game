@@ -1,6 +1,4 @@
-package james.springboot.spring_game;
-
-import io.micrometer.core.lang.Nullable;
+package james.springboot.spring_game.Models;
 
 public class Pair<Type1, Type2> {
     public Type1 a;

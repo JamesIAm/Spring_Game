@@ -1,14 +1,14 @@
 package james.springboot.spring_game.Services;
 
-import java.util.HashMap;
-
-import org.springframework.stereotype.Service;
-
 import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidMoveException;
 import james.springboot.spring_game.Exceptions.WrongPlayerException;
+import james.springboot.spring_game.Utilities.Utilities;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
 
 @Service
 @Log4j2
@@ -41,7 +41,7 @@ public class GameService {
             }
         }
         HashMap<String, Object> toReturn = new HashMap<>();
-        toReturn.put("board", Utilities.deepCopyBoard(board, BOARD_SIZE));
+        toReturn.put("board", Utilities.deepCopyDoubleIntArray(board, BOARD_SIZE, BOARD_SIZE));
         toReturn.put("currentPlayer", this.currentPlayer);
         return toReturn;
     }
@@ -56,10 +56,10 @@ public class GameService {
             throw new GameOverException(winner);
         }
         if (this.board[y][x] != 0) {
-            log.error("Invalid move: " + x  +" " + y + "\tPlayer: " + playerId );
+            log.error("Invalid move: " + x + " " + y + "\tPlayer: " + playerId);
             throw new InvalidMoveException();
         }
-        this.board[y][x] =  playerId;
+        this.board[y][x] = playerId;
         winCheck();
         if (currentPlayer == 1) {
             currentPlayer = 2;

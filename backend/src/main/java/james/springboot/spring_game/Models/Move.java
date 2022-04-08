@@ -1,4 +1,4 @@
-package james.springboot.spring_game;
+package james.springboot.spring_game.Models;
 
 public class Move {
     public final int x;
