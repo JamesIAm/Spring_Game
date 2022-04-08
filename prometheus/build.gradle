@@ -1,0 +1,4 @@
+task start(type: Exec) {
+    commandLine = ["bash", "-c", "./prometheus"]
+//    finalizedBy(cleanup)
+}

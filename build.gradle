@@ -5,6 +5,10 @@ repositories {
     mavenCentral()
 }
 
+task start(type: Exec) {
+    commandLine('open', "http://localhost:9090/graph")
+}
+
 //dependencies {
 //    compile 'log4j:log4j:1.2.17'
 //    compile project(':core')
