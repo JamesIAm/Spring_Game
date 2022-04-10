@@ -128,7 +128,7 @@ public class AgentService {
         if (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) > (this.startTime + this.SEARCH_TIME)) {
             return new Move();
         }
-        if (depth < maxDepth) {
+        if (depth <= maxDepth) {
             // print("Alpha: ", alpha, "\tBeta: ", beta)
             ArrayList<Move> validMoves = this.findMoves(board, priorityMoves);
             Move bestMove = new Move();
@@ -149,7 +149,7 @@ public class AgentService {
                 } else {
                     // If not won, go a layer deeper and calculate their move
                     Move newMove = this.findMyMove(simulatedBoard, depth + 1, maxDepth, alpha, beta,
-                            otherPlayerScore, thisPlayerScore, newPriorityMoves);
+                            otherPlayerScore.clone(), thisPlayerScore.clone(), newPriorityMoves);
                     if (newMove.score == 0) {
                         break;
                     } else {
@@ -326,13 +326,13 @@ public class AgentService {
                     // If it is now semi open. The previous line was open
                     // this.priorityMoves.append(tuple(newY, newX))
                     this.priorityMoves.add(new Move(newX, newY));
-                    return new Pair<>((previousLineLength - 1), Openess.SEMI);
+                    return new Pair<>((previousLineLength), Openess.SEMI);
                 } else if (value != currentPlayerId) {
                     // If it is now closed, the previous line was semi open
-                    return new Pair<>((previousLineLength - 1), Openess.CLOSED);
+                    return new Pair<>((previousLineLength), Openess.CLOSED);
                 }
             } else {
-                return new Pair<>((previousLineLength - 1), Openess.CLOSED);
+                return new Pair<>((previousLineLength), Openess.CLOSED);
             }
         }
         throw new Exception("Failed in calculate new lines function");
@@ -370,10 +370,10 @@ public class AgentService {
                     // If it is now semi open. The previous line was open
                     this.priorityMoves.add(new Move(newX, newY));
                     //  print(this.priorityMoves)
-                    return new Pair<>(Openess.OPEN, (previousLineLength - 1));
+                    return new Pair<>(Openess.OPEN, (previousLineLength));
                 } else if (value != id) {
                     // If it is now closed, the previous line was semi open
-                    return new Pair<>(Openess.SEMI, (previousLineLength - 1));
+                    return new Pair<>(Openess.SEMI, (previousLineLength));
                 }
                 //  else:
                 //      print(value, i)
@@ -381,7 +381,7 @@ public class AgentService {
                 //      print(newY, newX)
             } else {
                 //  print(((i-1)+(this.X_IN_A_LINE+1)), (i-1))
-                return new Pair<>(Openess.SEMI, (previousLineLength - 1));
+                return new Pair<>(Openess.SEMI, (previousLineLength));
             }
         }
         throw new Exception("Exception in calculate old lines");
