@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
 
 // @Getter
 @Service
@@ -25,7 +26,7 @@ public class AgentService {
             ((X_IN_A_LINE + 1) * 3) - 1}; // These indicate, of all the scores,
     // which ones indicate a win situation. 5 in a row (enclosed on both sides), 5
     // in a row (enclosed on one side), and 5 in a row (not enclosed)
-    private final Integer SEARCH_TIME = 5; // How many seconds the system searches before returning it's best solution
+    private final Integer SEARCH_TIME = 30; // How many seconds the system searches before returning it's best solution
     // private final Integer counter = 0
     private ArrayList<Move> priorityMoves = new ArrayList<>();
     // Contains a list of moves that should be searched first (continuations of the
@@ -92,12 +93,12 @@ public class AgentService {
 
             // this.counter = 0
             Score myStartScore = this.countLines(board, this.ID);
-            Score theirStartScore = this.countLines(board, this.ID * -1);
+            Score theirStartScore = this.countLines(board, 2);
             for (int depth = 1; depth < this.MAX_DEPTH; depth++) {
                 Move bestMove = this.findMyMove(board, 0, depth, -10000, 10000, myStartScore, theirStartScore,
-                        new ArrayList<>());
+                        new ArrayList<>(), this.ID);
                 if (bestMove == null || bestMove.score == 0) {
-                    break;
+//                    break;
                 } else {
                     // print("Likelihood of winning: ", bestScore, "\tBest Move", bestMove,
                     // "\tDepth", depth) // Shows the progression of the algorithm
@@ -124,24 +125,25 @@ public class AgentService {
     // It searches depth first, and uses alpha beta pruning to cut down on the
     // number of searched nodes
     public Move findMyMove(int[][] board, int depth, int maxDepth, Integer alpha, Integer beta,
-                           Score prevThisPlayerScore, Score prevOtherPlayerScore, ArrayList<Move> priorityMoves) throws Exception {
+                           Score prevThisPlayerScore, Score prevOtherPlayerScore, ArrayList<Move> priorityMoves, int id) throws Exception {
         if (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) > (this.startTime + this.SEARCH_TIME)) {
-            return new Move();
+            throw new TimeoutException();
         }
         if (depth <= maxDepth) {
+            int otherPlayerId = id == 1 ? 1 : 2;
             // print("Alpha: ", alpha, "\tBeta: ", beta)
             ArrayList<Move> validMoves = this.findMoves(board, priorityMoves);
             Move bestMove = new Move();
             for (Move move : validMoves) {
-                Pair<Score, ArrayList<Move>> thisPlayerChange = this.countChangeAdd(this.ID, board,
+                Pair<Score, ArrayList<Move>> thisPlayerChange = this.countChangeAdd(id, board,
                         prevThisPlayerScore, move);
-                Pair<Score, ArrayList<Move>> otherPlayerChange = this.countChangeMinus(this.ID * -1, board,
+                Pair<Score, ArrayList<Move>> otherPlayerChange = this.countChangeMinus(otherPlayerId, board,
                         prevOtherPlayerScore, move);
                 Score thisPlayerScore = thisPlayerChange.a;
                 Score otherPlayerScore = otherPlayerChange.a;
                 ArrayList<Move> newPriorityMoves = thisPlayerChange.b;
                 newPriorityMoves.addAll(otherPlayerChange.b);
-                int[][] simulatedBoard = this.simulateMove(board, move.x, move.y, this.ID);
+                int[][] simulatedBoard = this.simulateMove(board, move.x, move.y, id);
                 if (thisPlayerScore.winCheck()) {
                     // Check if the game is won
                     move.score = 1000;
@@ -149,14 +151,13 @@ public class AgentService {
                 } else {
                     // If not won, go a layer deeper and calculate their move
                     Move newMove = this.findMyMove(simulatedBoard, depth + 1, maxDepth, alpha, beta,
-                            otherPlayerScore.clone(), thisPlayerScore.clone(), newPriorityMoves);
-                    if (newMove.score == 0) {
-                        break;
-                    } else {
+                            otherPlayerScore.clone(), thisPlayerScore.clone(), newPriorityMoves, otherPlayerId);
+//                    newMove.score *= -1;
+                    if (bestMove.score == 0) {
+                        bestMove = move;
+                    }
+                    if (newMove.score != 0) {
                         // Initialise the best score
-                        if (bestMove.score == 0) {
-                            bestMove = move;
-                        }
                         // Update the best score if it's higher than the current best
                         if (newMove.score > bestMove.score) {
                             move.score = newMove.score;
@@ -172,10 +173,11 @@ public class AgentService {
                         // previous move)
                         // if (depth==2):
                         // print(bestScore, bestMove)
-                        return bestMove;
+
                     }
                 }
             }
+            return bestMove;
         } else {
             // At max depth, calculate the score based on the number of lines of differing
             // lengths it has
@@ -190,7 +192,6 @@ public class AgentService {
             sum -= otherPlayerScore;
             return new Move(sum);
         }
-        return new Move();
     }
 
     // Almost identical to findMyMove, but separated out to make tracking the ID
@@ -239,8 +240,7 @@ public class AgentService {
 
     // Goes through row by row, and measures the size of every consectutive line and
     // whether it's open ended or not
-    public void countLinesInDirection(int[][] board,
-                                      ArrayList<ArrayList<Pair<Integer, Integer>>> orderedItems,
+    public void countLinesInDirection(int[][] board, ArrayList<ArrayList<Pair<Integer, Integer>>> orderedItems,
                                       int id, Score score) {
         int length = 0;
         Openess openEnded = Openess.CLOSED;
@@ -264,17 +264,18 @@ public class AgentService {
                     } else {
                         score.incrementScore(Openess.CLOSED, length);
                     }
-                    lastNumber = currentCell;
+                    length = 0;
+                    openEnded = Openess.CLOSED;
                 }
-                length = 0;
-                openEnded = Openess.CLOSED;
+                lastNumber = currentCell;
+
             }
             if (length > 0) {
                 if (openEnded != Openess.CLOSED) {
                     score.incrementScore(Openess.SEMI, length);
+                } else {
+                    score.incrementScore(Openess.CLOSED, length);
                 }
-            } else {
-                score.incrementScore(Openess.CLOSED, length);
             }
             openEnded = Openess.CLOSED;
             length = 0;
@@ -352,7 +353,10 @@ public class AgentService {
             Pair<Openess, Integer> oldLineData = this.calculateOldLines(prevBoard, id, x, y, score, xyChange[0],
                     xyChange[0]);
             // print(prevIndex, newIndex, "returned")
-            score.decreaseOpeness(oldLineData);
+            if (oldLineData.b > 0) {
+                score.decreaseOpeness(oldLineData);
+            }
+
         }
         return new Pair<>(score, this.priorityMoves);
     }
@@ -370,10 +374,10 @@ public class AgentService {
                     // If it is now semi open. The previous line was open
                     this.priorityMoves.add(new Move(newX, newY));
                     //  print(this.priorityMoves)
-                    return new Pair<>(Openess.OPEN, (previousLineLength));
+                    return new Pair<>(Openess.OPEN, previousLineLength);
                 } else if (value != id) {
                     // If it is now closed, the previous line was semi open
-                    return new Pair<>(Openess.SEMI, (previousLineLength));
+                    return new Pair<>(Openess.SEMI, previousLineLength);
                 }
                 //  else:
                 //      print(value, i)
@@ -381,10 +385,10 @@ public class AgentService {
                 //      print(newY, newX)
             } else {
                 //  print(((i-1)+(this.X_IN_A_LINE+1)), (i-1))
-                return new Pair<>(Openess.SEMI, (previousLineLength));
+                return new Pair<>(Openess.SEMI, previousLineLength);
             }
         }
-        throw new Exception("Exception in calculate old lines");
+        return new Pair<>(Openess.CLOSED, 0);
     }
 
     // Finds moves that are valid to explore, only finds moves plus minus one of the
