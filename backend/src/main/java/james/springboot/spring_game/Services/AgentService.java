@@ -2,7 +2,7 @@ package james.springboot.spring_game.Services;
 
 import james.springboot.spring_game.Models.*;
 import james.springboot.spring_game.Utilities.Utilities;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,12 +13,12 @@ import java.util.concurrent.TimeoutException;
 
 // @Getter
 @Service
-@Log4j2
+@Slf4j
 public class AgentService {
-    private final Integer ID = 1;
+    private final Integer ID = 2;
     private final Integer BOARD_SIZE = 10;
     private final Integer X_IN_A_LINE = 5;
-    private final Integer MAX_DEPTH = 10; // Maximum depth the program will search to. Must be greater than 1
+    private final Integer MAX_DEPTH = 2; // Maximum depth the program will search to. Must be greater than 1
 
     private final Integer SEARCH_RADIUS = 1; // How far around the current min and max co-ords the system looks for new
     // moves. At 1, a tile on 3,3 will result in a search of 2,2 to 4,4
@@ -26,7 +26,7 @@ public class AgentService {
             ((X_IN_A_LINE + 1) * 3) - 1}; // These indicate, of all the scores,
     // which ones indicate a win situation. 5 in a row (enclosed on both sides), 5
     // in a row (enclosed on one side), and 5 in a row (not enclosed)
-    private final Integer SEARCH_TIME = 30; // How many seconds the system searches before returning it's best solution
+    private final Integer SEARCH_TIME = 5; // How many seconds the system searches before returning it's best solution
     // private final Integer counter = 0
     private ArrayList<Move> priorityMoves = new ArrayList<>();
     // Contains a list of moves that should be searched first (continuations of the
@@ -129,12 +129,14 @@ public class AgentService {
         if (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) > (this.startTime + this.SEARCH_TIME)) {
             throw new TimeoutException();
         }
+        String depthSpace = new String(new char[depth]).replace("\0", "\t");
         if (depth <= maxDepth) {
-            int otherPlayerId = id == 1 ? 1 : 2;
+            int otherPlayerId = id == 1 ? 2 : 1;
             // print("Alpha: ", alpha, "\tBeta: ", beta)
             ArrayList<Move> validMoves = this.findMoves(board, priorityMoves);
-            Move bestMove = new Move();
+            Move bestMove = new Move(-10000);
             for (Move move : validMoves) {
+                log.info(depthSpace + move.x + " " + move.y);
                 Pair<Score, ArrayList<Move>> thisPlayerChange = this.countChangeAdd(id, board,
                         prevThisPlayerScore, move);
                 Pair<Score, ArrayList<Move>> otherPlayerChange = this.countChangeMinus(otherPlayerId, board,
@@ -147,12 +149,13 @@ public class AgentService {
                 if (thisPlayerScore.winCheck()) {
                     // Check if the game is won
                     move.score = 1000;
+                    log.info(depthSpace + 1000);
                     return move;
                 } else {
                     // If not won, go a layer deeper and calculate their move
                     Move newMove = this.findMyMove(simulatedBoard, depth + 1, maxDepth, alpha, beta,
                             otherPlayerScore.clone(), thisPlayerScore.clone(), newPriorityMoves, otherPlayerId);
-//                    newMove.score *= -1;
+                    newMove.score *= -1;
                     if (bestMove.score == 0) {
                         bestMove = move;
                     }
@@ -173,10 +176,10 @@ public class AgentService {
                         // previous move)
                         // if (depth==2):
                         // print(bestScore, bestMove)
-
                     }
                 }
             }
+            log.info(depthSpace + "bestMove:" + bestMove.score + " " + bestMove.x + " " + bestMove.y);
             return bestMove;
         } else {
             // At max depth, calculate the score based on the number of lines of differing
@@ -186,10 +189,12 @@ public class AgentService {
             // int theirScore = prevOtherPlayerScore;
             // TODO:
             int sum = 0;
-            int otherPlayerScore = prevOtherPlayerScore.calculateScore(false);
-            int thisPlayerScore = prevThisPlayerScore.calculateScore(true);
-            sum += thisPlayerScore;
-            sum -= otherPlayerScore;
+            //TODO: WHAT IS THIS PLAYER, WHAT IS NEXT PLAYER
+            int otherPlayerScore = prevOtherPlayerScore.calculateScore(true);
+            int thisPlayerScore = prevThisPlayerScore.calculateScore(false);
+            sum -= thisPlayerScore;
+            sum += otherPlayerScore;
+            log.info(depthSpace + sum);
             return new Move(sum);
         }
     }
@@ -400,7 +405,7 @@ public class AgentService {
         int minY = this.BOARD_SIZE;
         int maxX = 0;
         int maxY = 0;
-        ArrayList<Move> validMoves = new ArrayList<>(priorityMoves);
+        ArrayList<Move> validMoves = new ArrayList<>();//TODO:priorityMoves);
         for (int y = 0; y < this.BOARD_SIZE; y++) {
             for (int x = 0; x < this.BOARD_SIZE; x++) {
                 if (board[y][x] != 0) {

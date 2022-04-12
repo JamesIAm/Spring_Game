@@ -6,11 +6,11 @@ public class Score {
     private int[][] score;
     private final int X_IN_A_ROW;
     //{CLOSED, SEMI, OPEN} {{Length=0, Length=1....Length=5},...}
-    private final Integer[][] NEXT_PLAYER_WEIGHTS = {{0, 0, 0, 0, 0, 1000}, {0, 0, 2, 10, 500, 1000}, {0, 0, 10, 100, 500,
+    private final Integer[][] NEXT_PLAYER_WEIGHTS = {{0, 0, 0, 0, 0, 1000}, {0, 0, 4, 8, 500, 1000}, {0, 0, 10, 100, 500,
             1000}};// Indicates the weights that scores are multiplied by.
     // The scores represent how many lines of a certain length and certain openess
     // (whether the two ends are blocked) exist in the board
-    private final Integer[][] CURRENT_PLAYER_WEIGHTS = {{0, 0, 0, 0, 0, 1000}, {0, 0, 2, 10, 50, 1000}, {0, 0, 10, 50, 200,
+    private final Integer[][] CURRENT_PLAYER_WEIGHTS = {{0, 0, 0, 0, 0, 1000}, {0, 0, 2, 5, 50, 1000}, {0, 0, 5, 50, 200,
             1000}};
 
     public Score(int xInARow) {
@@ -38,6 +38,9 @@ public class Score {
     }
 
     public void incrementScore(Openess openess, Integer scoreIndex) {
+        if (scoreIndex > X_IN_A_ROW) {
+            scoreIndex = X_IN_A_ROW;
+        }
         score[openess.intConversion][scoreIndex] += 1;
     }
 
