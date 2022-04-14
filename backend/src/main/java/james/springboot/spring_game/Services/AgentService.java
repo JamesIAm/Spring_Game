@@ -38,34 +38,9 @@ public class AgentService {
     private Long startTime;
 
     public AgentService() {
-        defineOrders();
+        Utilities.defineOrders(this.BOARD_SIZE, this.horizontalCoords, this.verticalCoords, this.upDiagCoords, this.downDiagCoords);
     }
-
-    // Creates the order that the board should be searched for existing lines. This
-    // was from a previous iteration of the line
-    // search that searched the entire board every time
-    // It defines an order to search over the data so that each row goes vertically,
-    // horizonatally or diagonally
-    public void defineOrders() {
-        for (int y = 0; y < this.BOARD_SIZE; y++) {
-            ArrayList<Pair<Integer, Integer>> lineOfMoves = new ArrayList<>();
-            for (int x = 0; x < this.BOARD_SIZE; x++) {
-                lineOfMoves.add(new Pair<>(x, y));
-
-            }
-            this.horizontalCoords.add(lineOfMoves);
-        }
-
-        // TODO:
-        // this.verticalCoords=np.swapaxes(this.horizontalCoords,0,1);
-        // TODO:
-        // ArrayList<Integer>downDiagTemp=new ArrayList<Integer>();for(int
-        // x=1-this.BOARD_SIZE;x<this.BOARD_SIZE;x++){downDiagTemp.append(np.diag(this.horizontalCoords,x))}this.downDiagCoords=np.array(downDiagTemp,dtype=object)
-        // TODO:
-        // ArrayList<Integer>upDiagTemp=new
-        // ArrayList<Integer>();flippedCoords=np.fliplr(this.horizontalCoords);for(int
-        // x=1-this.BOARD_SIZE;x<this.BOARD_SIZE;x++){upDiagTemp.append(np.diag(flippedCoords,x));this.upDiagCoords=np.array(upDiagTemp,dtype=object);
-    }
+    
 
     // Tries to find a move within a given time.
     // Iterates depth of search so if it runs out of time, it will default to the
@@ -133,6 +108,7 @@ public class AgentService {
         if (depth <= maxDepth) {
             int otherPlayerId = id == 1 ? 2 : 1;
             // print("Alpha: ", alpha, "\tBeta: ", beta)
+            //TDOD: VALIDMOVES INCLUDES ALREADY DONE MOVES???
             ArrayList<Move> validMoves = this.findMoves(board, priorityMoves);
             Move bestMove = new Move(-10000);
             for (Move move : validMoves) {
@@ -156,7 +132,7 @@ public class AgentService {
                     Move newMove = this.findMyMove(simulatedBoard, depth + 1, maxDepth, alpha, beta,
                             otherPlayerScore.clone(), thisPlayerScore.clone(), newPriorityMoves, otherPlayerId);
                     newMove.score *= -1;
-                    if (bestMove.score == 0) {
+                    if (bestMove.score == -10000) {
                         bestMove = move;
                     }
                     if (newMove.score != 0) {
@@ -190,10 +166,10 @@ public class AgentService {
             // TODO:
             int sum = 0;
             //TODO: WHAT IS THIS PLAYER, WHAT IS NEXT PLAYER
-            int otherPlayerScore = prevOtherPlayerScore.calculateScore(true);
-            int thisPlayerScore = prevThisPlayerScore.calculateScore(false);
-            sum -= thisPlayerScore;
-            sum += otherPlayerScore;
+            int justPlayedPlayerScore = prevOtherPlayerScore.calculateScore(true);
+            int aboutToPlayPlayerScore = prevThisPlayerScore.calculateScore(false);
+            sum += aboutToPlayPlayerScore;
+            sum -= justPlayedPlayerScore;
             log.info(depthSpace + sum);
             return new Move(sum);
         }
@@ -314,6 +290,10 @@ public class AgentService {
     private void do2LinesIn1RenameMe(int[][] prevBoard, int playerId, Integer newMoveX, Integer newMoveY, Score score, int xChange, int yChange) throws Exception {
         Pair<Integer, Openess> scoreDataPositive = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange, yChange);
         Pair<Integer, Openess> scoreDataNegative = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange * -1, yChange * -1);
+//        if (scoreDataPositive.a + scoreDataNegative.a == 4) {
+//            //TODO: Debug on this line
+//            int a = 1;
+//        }
         score.increaseScore(scoreDataPositive, scoreDataNegative);
     }
 
@@ -332,13 +312,15 @@ public class AgentService {
                     // If it is now semi open. The previous line was open
                     // this.priorityMoves.append(tuple(newY, newX))
                     this.priorityMoves.add(new Move(newX, newY));
-                    return new Pair<>((previousLineLength), Openess.SEMI);
+                    //-1 as the current value is not part of the line
+                    //Will never be less than 1 as previous line length starts from 0
+                    return new Pair<>((previousLineLength - 1), Openess.SEMI);
                 } else if (value != currentPlayerId) {
                     // If it is now closed, the previous line was semi open
-                    return new Pair<>((previousLineLength), Openess.CLOSED);
+                    return new Pair<>((previousLineLength - 1), Openess.CLOSED);
                 }
             } else {
-                return new Pair<>((previousLineLength), Openess.CLOSED);
+                return new Pair<>((previousLineLength - 1), Openess.CLOSED);
             }
         }
         throw new Exception("Failed in calculate new lines function");
@@ -379,10 +361,10 @@ public class AgentService {
                     // If it is now semi open. The previous line was open
                     this.priorityMoves.add(new Move(newX, newY));
                     //  print(this.priorityMoves)
-                    return new Pair<>(Openess.OPEN, previousLineLength);
+                    return new Pair<>(Openess.OPEN, previousLineLength - 1);
                 } else if (value != id) {
                     // If it is now closed, the previous line was semi open
-                    return new Pair<>(Openess.SEMI, previousLineLength);
+                    return new Pair<>(Openess.SEMI, previousLineLength - 1);
                 }
                 //  else:
                 //      print(value, i)
@@ -390,7 +372,7 @@ public class AgentService {
                 //      print(newY, newX)
             } else {
                 //  print(((i-1)+(this.X_IN_A_LINE+1)), (i-1))
-                return new Pair<>(Openess.SEMI, previousLineLength);
+                return new Pair<>(Openess.SEMI, previousLineLength - 1);
             }
         }
         return new Pair<>(Openess.CLOSED, 0);
