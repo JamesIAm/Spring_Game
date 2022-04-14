@@ -1,7 +1,11 @@
 package james.springboot.spring_game.Models;
 
 import james.springboot.spring_game.Utilities.Utilities;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+
+@Slf4j
 public class Score {
     private int[][] score;
     private final int X_IN_A_ROW;
@@ -29,7 +33,7 @@ public class Score {
         decrementScore(prevOpenessPositive, scoreDataToIncreasePositive.a);
         decrementScore(prevOpenessNegative, scoreDataToIncreaseNegative.a);
         Openess newOpeness = Openess.addInts(scoreDataToIncreaseNegative.b, scoreDataToIncreasePositive.b);
-        Integer newLenth = scoreDataToIncreaseNegative.a + scoreDataToIncreasePositive.a;
+        Integer newLenth = scoreDataToIncreaseNegative.a + scoreDataToIncreasePositive.a + 1;
         incrementScore(newOpeness, newLenth);
     }
 
@@ -66,6 +70,7 @@ public class Score {
 
     public int calculateScore(boolean current) {
         int sum = 0;
+        log.info((current ? "Just moved " : "About to move ") + Arrays.deepToString(score));
         if (current) {
             for (int openess = 0; openess < score.length; openess++) {
                 for (int lineLength = 1; lineLength < X_IN_A_ROW + 1; lineLength++) {

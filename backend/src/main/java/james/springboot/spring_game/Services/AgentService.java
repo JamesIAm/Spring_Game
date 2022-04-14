@@ -26,7 +26,7 @@ public class AgentService {
             ((X_IN_A_LINE + 1) * 3) - 1}; // These indicate, of all the scores,
     // which ones indicate a win situation. 5 in a row (enclosed on both sides), 5
     // in a row (enclosed on one side), and 5 in a row (not enclosed)
-    private final Integer SEARCH_TIME = 5; // How many seconds the system searches before returning it's best solution
+    private final Integer SEARCH_TIME = 30; // How many seconds the system searches before returning it's best solution
     // private final Integer counter = 0
     private ArrayList<Move> priorityMoves = new ArrayList<>();
     // Contains a list of moves that should be searched first (continuations of the
@@ -40,7 +40,7 @@ public class AgentService {
     public AgentService() {
         Utilities.defineOrders(this.BOARD_SIZE, this.horizontalCoords, this.verticalCoords, this.upDiagCoords, this.downDiagCoords);
     }
-    
+
 
     // Tries to find a move within a given time.
     // Iterates depth of search so if it runs out of time, it will default to the
@@ -68,7 +68,7 @@ public class AgentService {
 
             // this.counter = 0
             Score myStartScore = this.countLines(board, this.ID);
-            Score theirStartScore = this.countLines(board, 2);
+            Score theirStartScore = this.countLines(board, 1);
             for (int depth = 1; depth < this.MAX_DEPTH; depth++) {
                 Move bestMove = this.findMyMove(board, 0, depth, -10000, 10000, myStartScore, theirStartScore,
                         new ArrayList<>(), this.ID);
@@ -131,15 +131,14 @@ public class AgentService {
                     // If not won, go a layer deeper and calculate their move
                     Move newMove = this.findMyMove(simulatedBoard, depth + 1, maxDepth, alpha, beta,
                             otherPlayerScore.clone(), thisPlayerScore.clone(), newPriorityMoves, otherPlayerId);
-                    newMove.score *= -1;
+                    move.score = newMove.score * -1;
                     if (bestMove.score == -10000) {
                         bestMove = move;
                     }
-                    if (newMove.score != 0) {
+                    if (move.score != 0) {
                         // Initialise the best score
                         // Update the best score if it's higher than the current best
-                        if (newMove.score > bestMove.score) {
-                            move.score = newMove.score;
+                        if (move.score > bestMove.score) {
                             bestMove = move;
                         }
                         if (bestMove.score >= beta) {
