@@ -3,8 +3,6 @@ package james.springboot.spring_game.Models;
 import james.springboot.spring_game.Utilities.Utilities;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-
 @Slf4j
 public class Score {
     private int[][] score;
@@ -53,11 +51,6 @@ public class Score {
     }
 
     public boolean winCheck() {
-        if (
-                score[0][X_IN_A_ROW] > 0 || score[1][X_IN_A_ROW] > 0 || score[2][X_IN_A_ROW] > 0
-        ) {
-            System.out.println("asd");
-        }
         return score[0][X_IN_A_ROW] > 0 || score[1][X_IN_A_ROW] > 0 || score[2][X_IN_A_ROW] > 0;
     }
 
@@ -70,7 +63,7 @@ public class Score {
 
     public int calculateScore(boolean current) {
         int sum = 0;
-        log.info((current ? "Just moved " : "About to move ") + Arrays.deepToString(score));
+//        log.debug((current ? "Just moved " : "About to move ") + Arrays.deepToString(score));
         if (current) {
             for (int openess = 0; openess < score.length; openess++) {
                 for (int lineLength = 1; lineLength < X_IN_A_ROW + 1; lineLength++) {
