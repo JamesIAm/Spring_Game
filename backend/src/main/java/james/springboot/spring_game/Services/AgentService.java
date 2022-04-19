@@ -145,8 +145,10 @@ public class AgentService {
                         if (bestMove.score >= beta) {
                             break;
                         }
-                        if (bestMove.score > alpha) {
-                            alpha = bestMove.score;
+                        if (id == this.ID){
+                            if (bestMove.score < alpha) {
+                                break;
+                            }
                         }
                         // If time is up, return 0 (causes the move() function to return the best found
                         // previous move)

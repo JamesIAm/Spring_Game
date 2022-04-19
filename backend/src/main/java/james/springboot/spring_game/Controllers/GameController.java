@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.HashMap;
 
 @RestController
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin()
 @RequestMapping("/game")
 @Log4j2
 public class GameController {
