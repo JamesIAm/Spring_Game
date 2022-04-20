@@ -3,6 +3,7 @@ import axios from "axios";
 import BoardRow from "./BoardRow";
 
 const Board = () => {
+const host = "18.130.217.147"
 	const [boardState, setBoardState] = useState([]);
 	const [player, setPlayer] = useState();
 	const [gameWinner, setGameWinner] = useState(0);
@@ -12,7 +13,7 @@ const Board = () => {
 		axios
 			//Sends false, until game is over. Then sends true
 			.get(
-				"http://localhost:8080/game/getState/" +
+				"http://"+host+":8080/game/getState/" +
 					(gameWinner !== 0 || gameOver).toString()
 			)
 			.then((res) => {
@@ -32,7 +33,7 @@ const Board = () => {
 			});
 	};
 	const resetBoard = () => {
-		axios.post("http://localhost:8080/game/resetBoard").then(() => {
+		axios.post("http://"+host+":8080/game/resetBoard").then(() => {
 			updateBoard();
 			setGameWinner(0);
 		});
