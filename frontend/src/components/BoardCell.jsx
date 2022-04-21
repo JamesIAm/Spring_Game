@@ -11,30 +11,31 @@ const BoardCell = ({
 	gameWinner,
 	setGameWinner,
 	computerWorking,
-	setComputerWorking
+	setComputerWorking,
 }) => {
-    const host = "jamesnahajski.co.uk"
 	const makeMove = (x, y) => {
-		setComputerWorking(true)
+		setComputerWorking(true);
+		setPlayer("Computer");
 		axios
-		.post(process.env.REACT_APP_BACKEND_HOST + "/game/makeMove", {
-			player: player,
-			x: x,
-			y: y,
-		})
-		.then((res) => updateBoard())
-		.catch((err) => {
-			let status = err.response.status;
-			console.log(err.response);
-			if (status === 417) {
-				setGameWinner(err.response.data.message);
-				console.log("sending true");
-				updateBoard(true);
-			} else {
-				console.error(err);
-				setComputerWorking(false)
-			}
-		});
+			.post(process.env.REACT_APP_BACKEND_HOST + "/game/makeMove", {
+				player: 1,
+				x: x,
+				y: y,
+			})
+			.then((res) => updateBoard())
+			.catch((err) => {
+				let status = err.response.status;
+				console.log(err.response);
+				if (status === 417) {
+					setGameWinner(err.response.data.message);
+					console.log("sending true");
+					updateBoard(true);
+				} else {
+					console.error(err);
+					setComputerWorking(false);
+					setPlayer("Human");
+				}
+			});
 	};
 	return (
 		<td row={rowKey} column={columnKey}>

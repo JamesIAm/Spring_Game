@@ -6,12 +6,13 @@ const BoardRow = ({
 	row,
 	updateBoard,
 	player,
+	setPlayer,
 	gameWinner,
 	setGameWinner,
 	computerWorking,
-	setComputerWorking
+	setComputerWorking,
 }) => {
-	console.log(row);	
+	console.log(row);
 	return (
 		<tr row={rowKey}>
 			{row.map((cell, columnKey) => {
@@ -23,6 +24,7 @@ const BoardRow = ({
 						columnKey={columnKey}
 						updateBoard={updateBoard}
 						player={player}
+						setPlayer={setPlayer}
 						gameWinner={gameWinner}
 						setGameWinner={setGameWinner}
 						computerWorking={computerWorking}
