@@ -11,10 +11,10 @@ const BoardCell = ({
 	gameWinner,
 	setGameWinner,
 }) => {
-    const host = "18.130.217.147"
+    const host = "jamesnahajski.co.uk"
 	const makeMove = (x, y) => {
 		axios
-			.post("http://"+host+":8080/game/makeMove", {
+			.post("https://"+host+":8443/game/makeMove", {
 				player: player,
 				x: x,
 				y: y,

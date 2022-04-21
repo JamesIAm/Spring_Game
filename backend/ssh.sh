@@ -1,2 +1,2 @@
-scp -r build/libs/backend-0.0.1-SNAPSHOT.war root@ec2-18-130-217-147.eu-west-2.compute.amazonaws.com:/usr/local/tomcat10/webapps/ROOT.war
+scp build/libs/backend-0.0.1-SNAPSHOT.war root@ec2-18-130-217-147.eu-west-2.compute.amazonaws.com:/usr/local/tomcat9/webapps/ROOT.war
 ssh root@ec2-18-130-217-147.eu-west-2.compute.amazonaws.com "systemctl restart tomcat"
