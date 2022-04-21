@@ -8,6 +8,8 @@ const BoardRow = ({
 	player,
 	gameWinner,
 	setGameWinner,
+	computerWorking,
+	setComputerWorking
 }) => {
 	console.log(row);	
 	return (
@@ -23,6 +25,8 @@ const BoardRow = ({
 						player={player}
 						gameWinner={gameWinner}
 						setGameWinner={setGameWinner}
+						computerWorking={computerWorking}
+						setComputerWorking={setComputerWorking}
 					/>
 				);
 			})}

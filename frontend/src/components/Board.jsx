@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 import BoardRow from "./BoardRow";
+import TwinSpin from "react-cssfx-loading/lib/TwinSpin";
 
 const Board = () => {
-console.log(process.env.REACT_APP_BACKEND_HOST)
 	const [boardState, setBoardState] = useState([]);
 	const [player, setPlayer] = useState();
 	const [gameWinner, setGameWinner] = useState(0);
+	const [computerWorking, setComputerWorking] = useState(false);
 	const updateBoard = (gameOver = false) => {
 		console.log(gameOver);
 		console.log(gameWinner !== 0 || gameOver);
@@ -31,36 +32,42 @@ console.log(process.env.REACT_APP_BACKEND_HOST)
 					console.error(err);
 				}
 			});
+		setComputerWorking(false)
 	};
 	const resetBoard = () => {
 		axios.post(process.env.REACT_APP_BACKEND_HOST + "/game/resetBoard").then(() => {
 			updateBoard();
 			setGameWinner(0);
 		});
+		setComputerWorking(false)
 	};
 
 	return (
 		<>
 			{gameWinner ? (
 				<h2>Player {gameWinner} wins</h2>
-			) : (
-				<h2>Current player: {player}</h2>
-			)}
+				) : (
+					<h2>Current player: {player}</h2>
+					)}
+			{computerWorking ? <TwinSpin style={{"position":"fixed"}} width={"20vw"} height={"20vw"}/> : <></>}
+				
 			<table>
 				<tbody>
 					{boardState.map((row, rowKey) => {
 						return (
 							<BoardRow
-								row={row}
-								key={rowKey}
-								rowKey={rowKey}
-								updateBoard={updateBoard}
-								player={player}
-								gameWinner={gameWinner}
-								setGameWinner={setGameWinner}
+							row={row}
+							key={rowKey}
+							rowKey={rowKey}
+							updateBoard={updateBoard}
+							player={player}
+							gameWinner={gameWinner}
+							setGameWinner={setGameWinner}
+							computerWorking={computerWorking}
+							setComputerWorking={setComputerWorking}
 							/>
-						);
-					})}
+							);
+						})}
 				</tbody>
 			</table>
 			<button onClick={() => updateBoard()}>Get board</button>
