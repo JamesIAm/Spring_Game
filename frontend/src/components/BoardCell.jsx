@@ -14,7 +14,7 @@ const BoardCell = ({
     const host = "jamesnahajski.co.uk"
 	const makeMove = (x, y) => {
 		axios
-			.post("https://"+host+":8443/game/makeMove", {
+			.post(process.env.REACT_APP_BACKEND_HOST + "/game/makeMove", {
 				player: player,
 				x: x,
 				y: y,

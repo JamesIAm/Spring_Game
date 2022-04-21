@@ -3,7 +3,7 @@ import axios from "axios";
 import BoardRow from "./BoardRow";
 
 const Board = () => {
-const host = "jamesnahajski.co.uk"
+console.log(process.env.REACT_APP_BACKEND_HOST)
 	const [boardState, setBoardState] = useState([]);
 	const [player, setPlayer] = useState();
 	const [gameWinner, setGameWinner] = useState(0);
@@ -13,7 +13,7 @@ const host = "jamesnahajski.co.uk"
 		axios
 			//Sends false, until game is over. Then sends true
 			.get(
-				"https://"+host+":8443/game/getState/" +
+				process.env.REACT_APP_BACKEND_HOST + "/game/getState/" +
 					(gameWinner !== 0 || gameOver).toString()
 			)
 			.then((res) => {
@@ -33,7 +33,7 @@ const host = "jamesnahajski.co.uk"
 			});
 	};
 	const resetBoard = () => {
-		axios.post("https://"+host+":8443/game/resetBoard").then(() => {
+		axios.post(process.env.REACT_APP_BACKEND_HOST + "/game/resetBoard").then(() => {
 			updateBoard();
 			setGameWinner(0);
 		});
