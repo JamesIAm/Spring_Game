@@ -10,6 +10,10 @@ group = 'james.springboot'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
+test {
+    useJUnitPlatform()
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
