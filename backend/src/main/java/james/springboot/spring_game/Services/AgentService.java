@@ -145,7 +145,7 @@ public class AgentService {
                         if (bestMove.score >= beta) {
                             break;
                         }
-                        if (id == this.ID){
+                        if (id == this.ID) {
                             if (bestMove.score < alpha) {
                                 break;
                             }
@@ -226,7 +226,7 @@ public class AgentService {
     public void countLinesInDirection(int[][] board, ArrayList<ArrayList<Pair<Integer, Integer>>> orderedItems,
                                       int id, Score score) {
         int length = 0;
-        Openess openEnded = Openess.CLOSED;
+        Openness openEnded = Openness.CLOSED;
         int lastNumber = -1; // Represents the last number observed, to see if lines are open ended or not.
         // At the start of every line it defaults to the -1, so lines
         // that start at the edge of the board are not open ended
@@ -236,31 +236,31 @@ public class AgentService {
                 //If next tile is this players id, increment the length
                 if (currentCell == id) {
                     if (length == 0 && lastNumber == 0) {
-                        openEnded = Openess.SEMI;
+                        openEnded = Openness.SEMI;
                     }
                     length += 1;
                 } else if (length > 0) {
-                    if (openEnded == Openess.SEMI && currentCell == 0) {
-                        score.incrementScore(Openess.OPEN, length);
-                    } else if (openEnded == Openess.SEMI || currentCell == 0) {
-                        score.incrementScore(Openess.SEMI, length);
+                    if (openEnded == Openness.SEMI && currentCell == 0) {
+                        score.incrementScore(Openness.OPEN, length);
+                    } else if (openEnded == Openness.SEMI || currentCell == 0) {
+                        score.incrementScore(Openness.SEMI, length);
                     } else {
-                        score.incrementScore(Openess.CLOSED, length);
+                        score.incrementScore(Openness.CLOSED, length);
                     }
                     length = 0;
-                    openEnded = Openess.CLOSED;
+                    openEnded = Openness.CLOSED;
                 }
                 lastNumber = currentCell;
 
             }
             if (length > 0) {
-                if (openEnded != Openess.CLOSED) {
-                    score.incrementScore(Openess.SEMI, length);
+                if (openEnded != Openness.CLOSED) {
+                    score.incrementScore(Openness.SEMI, length);
                 } else {
-                    score.incrementScore(Openess.CLOSED, length);
+                    score.incrementScore(Openness.CLOSED, length);
                 }
             }
-            openEnded = Openess.CLOSED;
+            openEnded = Openness.CLOSED;
             length = 0;
             lastNumber = -1;
         }
@@ -290,8 +290,8 @@ public class AgentService {
     }
 
     private void do2LinesIn1RenameMe(int[][] prevBoard, int playerId, Integer newMoveX, Integer newMoveY, Score score, int xChange, int yChange) throws Exception {
-        Pair<Integer, Openess> scoreDataPositive = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange, yChange);
-        Pair<Integer, Openess> scoreDataNegative = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange * -1, yChange * -1);
+        Pair<Integer, Openness> scoreDataPositive = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange, yChange);
+        Pair<Integer, Openness> scoreDataNegative = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange * -1, yChange * -1);
 //        if (scoreDataPositive.a + scoreDataNegative.a == 4) {
 //            //TODO: Debug on this line
 //            int a = 1;
@@ -304,7 +304,7 @@ public class AgentService {
     // And adds 1 score to the length
     //Triplet return is:
     //1:
-    public Pair<Integer, Openess> calculateNewLines(int[][] board, int currentPlayerId, int x, int y, int xChange, int yChange) throws Exception {
+    public Pair<Integer, Openness> calculateNewLines(int[][] board, int currentPlayerId, int x, int y, int xChange, int yChange) throws Exception {
         for (int previousLineLength = 1; previousLineLength < this.X_IN_A_LINE + 1; previousLineLength++) {// Check positive horizontal
             int newX = x + (xChange * previousLineLength);
             int newY = y + (yChange * previousLineLength);
@@ -316,13 +316,13 @@ public class AgentService {
                     this.priorityMoves.add(new Move(newX, newY));
                     //-1 as the current value is not part of the line
                     //Will never be less than 1 as previous line length starts from 0
-                    return new Pair<>((previousLineLength - 1), Openess.SEMI);
+                    return new Pair<>((previousLineLength - 1), Openness.SEMI);
                 } else if (value != currentPlayerId) {
                     // If it is now closed, the previous line was semi open
-                    return new Pair<>((previousLineLength - 1), Openess.CLOSED);
+                    return new Pair<>((previousLineLength - 1), Openness.CLOSED);
                 }
             } else {
-                return new Pair<>((previousLineLength - 1), Openess.CLOSED);
+                return new Pair<>((previousLineLength - 1), Openness.CLOSED);
             }
         }
         throw new Exception("Failed in calculate new lines function");
@@ -339,7 +339,7 @@ public class AgentService {
         for (int[] xyChange : new int[][]{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {1, 1}, {1, -1},
                 {1, 0}, {1, 1}}) {
             // print(this.calculateOldLines(prevBoard, id, x, y, score, xChange, yChange))
-            Pair<Openess, Integer> oldLineData = this.calculateOldLines(prevBoard, id, x, y, score, xyChange[0],
+            Pair<Openness, Integer> oldLineData = this.calculateOldLines(prevBoard, id, x, y, score, xyChange[0],
                     xyChange[0]);
             // print(prevIndex, newIndex, "returned")
             if (oldLineData.b > 0) {
@@ -351,7 +351,7 @@ public class AgentService {
     }
 
     // Finds the old index of the lines and returns a new index for them as well
-    public Pair<Openess, Integer> calculateOldLines(int[][] board, int id, int x, int y, Score prevScore, Integer xChange, Integer yChange) throws Exception {
+    public Pair<Openness, Integer> calculateOldLines(int[][] board, int id, int x, int y, Score prevScore, Integer xChange, Integer yChange) throws Exception {
         // print("Changes", xChange, yChange)
         for (int previousLineLength = 1; previousLineLength < this.X_IN_A_LINE + 1; previousLineLength++) {// Check positive horizontal
             int newX = x + (xChange * previousLineLength);
@@ -363,10 +363,10 @@ public class AgentService {
                     // If it is now semi open. The previous line was open
                     this.priorityMoves.add(new Move(newX, newY));
                     //  print(this.priorityMoves)
-                    return new Pair<>(Openess.OPEN, previousLineLength - 1);
+                    return new Pair<>(Openness.OPEN, previousLineLength - 1);
                 } else if (value != id) {
                     // If it is now closed, the previous line was semi open
-                    return new Pair<>(Openess.SEMI, previousLineLength - 1);
+                    return new Pair<>(Openness.SEMI, previousLineLength - 1);
                 }
                 //  else:
                 //      print(value, i)
@@ -374,10 +374,10 @@ public class AgentService {
                 //      print(newY, newX)
             } else {
                 //  print(((i-1)+(this.X_IN_A_LINE+1)), (i-1))
-                return new Pair<>(Openess.SEMI, previousLineLength - 1);
+                return new Pair<>(Openness.SEMI, previousLineLength - 1);
             }
         }
-        return new Pair<>(Openess.CLOSED, 0);
+        return new Pair<>(Openness.CLOSED, 0);
     }
 
     // Finds moves that are valid to explore, only finds moves plus minus one of the

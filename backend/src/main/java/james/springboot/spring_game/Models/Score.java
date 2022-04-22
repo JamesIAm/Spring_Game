@@ -25,25 +25,25 @@ public class Score {
         X_IN_A_ROW = score[0].length - 1;
     }
 
-    public void increaseScore(Pair<Integer, Openess> scoreDataToIncreasePositive, Pair<Integer, Openess> scoreDataToIncreaseNegative) {
-        Openess prevOpenessPositive = Openess.addInts(1, scoreDataToIncreasePositive.b);
-        Openess prevOpenessNegative = Openess.addInts(1, scoreDataToIncreaseNegative.b);
-        decrementScore(prevOpenessPositive, scoreDataToIncreasePositive.a);
-        decrementScore(prevOpenessNegative, scoreDataToIncreaseNegative.a);
-        Openess newOpeness = Openess.addInts(scoreDataToIncreaseNegative.b, scoreDataToIncreasePositive.b);
+    public void increaseScore(Pair<Integer, Openness> scoreDataToIncreasePositive, Pair<Integer, Openness> scoreDataToIncreaseNegative) {
+        Openness prevOpennessPositive = Openness.addInts(1, scoreDataToIncreasePositive.b);
+        Openness prevOpennessNegative = Openness.addInts(1, scoreDataToIncreaseNegative.b);
+        decrementScore(prevOpennessPositive, scoreDataToIncreasePositive.a);
+        decrementScore(prevOpennessNegative, scoreDataToIncreaseNegative.a);
+        Openness newOpenness = Openness.addInts(scoreDataToIncreaseNegative.b, scoreDataToIncreasePositive.b);
         Integer newLenth = scoreDataToIncreaseNegative.a + scoreDataToIncreasePositive.a + 1;
-        incrementScore(newOpeness, newLenth);
+        incrementScore(newOpenness, newLenth);
     }
 
-    private void decrementScore(Openess openess, Integer scoreIndex) {
-        score[openess.intConversion][scoreIndex] -= 1;
+    private void decrementScore(Openness openness, Integer scoreIndex) {
+        score[openness.intConversion][scoreIndex] -= 1;
     }
 
-    public void incrementScore(Openess openess, Integer scoreIndex) {
+    public void incrementScore(Openness openness, Integer scoreIndex) {
         if (scoreIndex > X_IN_A_ROW) {
             scoreIndex = X_IN_A_ROW;
         }
-        score[openess.intConversion][scoreIndex] += 1;
+        score[openness.intConversion][scoreIndex] += 1;
     }
 
     public Score clone() {
@@ -54,7 +54,7 @@ public class Score {
         return score[0][X_IN_A_ROW] > 0 || score[1][X_IN_A_ROW] > 0 || score[2][X_IN_A_ROW] > 0;
     }
 
-    public void decreaseOpeness(Pair<Openess, Integer> oldLineData) {
+    public void decreaseOpeness(Pair<Openness, Integer> oldLineData) {
         int oldOpeness = oldLineData.a.intConversion;
         int oldLineLength = oldLineData.b;
         score[oldOpeness][oldLineLength] -= 1;
