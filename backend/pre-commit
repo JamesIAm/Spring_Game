@@ -1,0 +1,6 @@
+cd ../../backend
+pwd
+badge=$(/bin/zsh ./calculateCoverage.sh)
+echo $badge
+cd ..
+sed -i "" "1s/.*/$badge/" ./README.md
