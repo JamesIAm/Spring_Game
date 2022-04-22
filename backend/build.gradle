@@ -3,6 +3,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'war'
+    id "jacoco"
 }
 
 
@@ -39,3 +40,12 @@ dependencies {
 }
 
 task start(dependsOn: bootRun)
+
+jacocoTestReport {
+    dependsOn(test)
+    reports {
+        html.required = true
+        xml.required = false
+        csv.required = true
+    }
+}
