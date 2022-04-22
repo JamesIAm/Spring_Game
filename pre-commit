@@ -1,4 +1,18 @@
-#Runs from the root directory
+#Will run from the root directory
+#Only works with gradle, not hard to adjust though
+
+
+#cat ./pre-commit >> .git/hooks/pre-commit
+#Add the following plugin to your build.gradle:
+#plugins {
+#    id "jacoco"
+#}
+#Add the following config to the same build.gradle:
+#jacocoTestReport {
+#    reports {
+#        csv.required = true
+#    }
+#}
 
 java_module_to_test=":backend"
 path_to_jacoco_report="backend/build/reports/jacoco/test/jacocoTestReport.csv"
