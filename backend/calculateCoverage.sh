@@ -32,4 +32,4 @@ then
 else
   colour="blueviolet"
 fi
-echo \\\!\[\]\(https:\\/\\/img.shields.io\\/badge\\/Code_Coverage-"$percent"%25-"$colour"\)
+echo \\\!\[\]\(https:\\/\\/img.shields.io\\/badge\\/Java_Test_Coverage-"$percent"%25-"$colour"\)
