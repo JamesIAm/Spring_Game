@@ -44,8 +44,8 @@ then
     sed -i "" "$badgeLineNum s/.*/$badge/" ./README.md
 else
     sed -i "" '1i\
-'"$badge"'
-
+'"$badge"'\
+''\
 ' ./README.md
 fi
 
