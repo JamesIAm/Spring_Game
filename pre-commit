@@ -45,6 +45,7 @@ then
 else
     sed -i "" '1i\
 '"$badge"'
+
 ' ./README.md
 fi
 
