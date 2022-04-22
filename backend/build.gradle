@@ -42,7 +42,6 @@ dependencies {
 task start(dependsOn: bootRun)
 
 jacocoTestReport {
-    dependsOn(test)
     reports {
         html.required = true
         xml.required = false

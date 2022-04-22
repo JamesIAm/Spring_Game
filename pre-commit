@@ -1,11 +1,16 @@
 #Runs from the root directory
-./gradlew :backend:jacocoTestReport -q
+
+java_module_to_test=":backend"
+path_to_jacoco_report="backend/build/reports/jacoco/test/jacocoTestReport.csv"
+badge_name="Java_Test_Coverage"
+
+./gradlew $java_module_to_test:test $java_module_to_test:jacocoTestReport -q
 missed=0
 covered=0
 while read -r p; do
   missed=$((missed + $(echo "$p" | cut -d "," -f 4)))
   covered=$((covered + $(echo "$p" | cut -d "," -f 5)))
-done <<< "$(grep "james.springboot.spring_game" backend/build/reports/jacoco/test/jacocoTestReport.csv)"
+done <<< "$(cat $path_to_jacoco_report | tail -n +2)"
 total=$((covered + missed))
 percent=$((covered * 100 / total))
 
@@ -31,8 +36,16 @@ then
 else
   colour="blueviolet"
 fi
-badge=\\\!\[\]\(https:\\/\\/img.shields.io\\/badge\\/Java_Test_Coverage-"$percent"%25-"$colour"\)
-echo $badge
-badgeLineNum=$(grep -n Java_Test_Coverage "./README.md"  | cut -d : -f 1)
-sed -i "" "$badgeLineNum s/.*/$badge/" ./README.md
+badge=\\\!\[\]\(https:\\/\\/img.shields.io\\/badge\\/$badge_name-"$percent"%25-"$colour"\)
+
+if (grep -q $badge_name "./README.md")
+then
+    badgeLineNum=$(grep -n $badge_name "./README.md"  | cut -d : -f 1)
+    sed -i "" "$badgeLineNum s/.*/$badge/" ./README.md
+else
+    sed -i "" '1i\
+'"$badge"'
+' ./README.md
+fi
+
 git add ./README.md
