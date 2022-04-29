@@ -9,7 +9,7 @@ public class Score {
   private int[][] score;
   private final int xInARow;
   //{CLOSED, SEMI, OPEN} {{Length=0, Length=1....Length=5},...}
-  private final Integer[][] NEXT_PLAYER_WEIGHTS = {{0, 1, 2, 3, 4, 1000}, {0, 3, 5, 8, 500, 1000}, {0, 4, 20, 100, 500,
+  private final Integer[][] NEXT_PLAYER_WEIGHTS = {{0, 2, 3, 4, 5, 1000}, {0, 3, 5, 8, 400, 1000}, {0, 5, 20, 100, 500,
       1000}};// Indicates the weights that scores are multiplied by.
   // The scores represent how many lines of a certain length and certain openess
   // (whether the two ends are blocked) exist in the board
