@@ -1,5 +1,6 @@
 package james.springboot.spring_game.Models;
 
+import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidCellStateException;
 import james.springboot.spring_game.Exceptions.InvalidPlayerIdException;
 import org.junit.jupiter.api.Assertions;
@@ -65,6 +66,7 @@ public class BoardTest {
     board.makeMove(3, 2, 2);
     board.makeMove(3, 5, 3);
     board.makeMove(7, 5, 4);
+    //TODO: mock Utilities?
     Board newBoard = board.deepCopyBoard();
     int[][] boardRaw = newBoard.getBoard();
     Assertions.assertAll(
@@ -89,5 +91,27 @@ public class BoardTest {
         () -> Assertions.assertNotEquals(board.getBoard()[6][3], newBoard.getBoard()[6][3])
 
     );
+  }
+
+  @Test
+  public void findValidMoveReturnsAMove() throws GameOverException {
+    Assertions.assertInstanceOf(Move.class, board.findValidMove());
+  }
+
+  @Test
+  public void findValidMoveReturnsAMoveWhereCellIs0() throws InvalidPlayerIdException, InvalidCellStateException, GameOverException {
+    board.makeMove(0, 0, 1);
+    Move suggestedMove = board.findValidMove();
+    Assertions.assertEquals(0, board.getBoard()[suggestedMove.y][suggestedMove.x]);
+  }
+
+  @Test
+  public void ifNoValidMovesValidMoveThrowsException() throws InvalidPlayerIdException, InvalidCellStateException {
+    for (int y = 0; y < 10; y++) {
+      for (int x = 0; x < 10; x++) {
+        board.makeMove(y, x, 1);
+      }
+    }
+    Assertions.assertThrows(GameOverException.class, () -> board.findValidMove());
   }
 }

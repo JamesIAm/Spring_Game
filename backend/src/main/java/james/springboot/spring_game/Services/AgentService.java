@@ -1,6 +1,7 @@
 package james.springboot.spring_game.Services;
 
 import james.springboot.spring_game.Exceptions.FailedIfException;
+import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidOpenessStateException;
 import james.springboot.spring_game.Models.*;
 import james.springboot.spring_game.Utilities.Utilities;
@@ -48,22 +49,11 @@ public class AgentService {
   // Iterates depth of search so if it runs out of time, it will default to the
   // last found best move
   // If the program throws any error it defaults to a valid value
-  public Move move(final int[][] board) {
-    Move prevBestMove = null;
+  public Move move(Board boardnew) throws GameOverException {
+    Move prevBestMove = boardnew.findValidMove();
+    int[][] board = boardnew.getBoard();
     //Starts off with a valid move
-    for (int y = 0; y < this.BOARD_SIZE; y++) {
-      if (prevBestMove != null) {
-        break;
-      }
-      for (int x = 0; x < this.BOARD_SIZE; x++) {
-        if (prevBestMove != null) {
-          break;
-        }
-        if (board[y][x] == 0) {
-          prevBestMove = new Move(x, y);
-        }
-      }
-    }
+
 
     try {
       this.startTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);

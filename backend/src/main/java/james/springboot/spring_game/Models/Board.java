@@ -1,5 +1,6 @@
 package james.springboot.spring_game.Models;
 
+import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidCellStateException;
 import james.springboot.spring_game.Exceptions.InvalidPlayerIdException;
 import james.springboot.spring_game.Utilities.Utilities;
@@ -12,7 +13,8 @@ public class Board {
     board = new int[BOARD_SIZE][BOARD_SIZE];
   }
 
-  private Board(int[][] newBoard) {
+  //TODO: make private
+  public Board(int[][] newBoard) {
     board = newBoard;
   }
 
@@ -41,5 +43,17 @@ public class Board {
 
   public Board deepCopyBoard() {
     return new Board(Utilities.deepCopyDoubleIntArray(board));
+  }
+
+  public Move findValidMove() throws GameOverException {
+
+    for (int y = 0; y < this.BOARD_SIZE; y++) {
+      for (int x = 0; x < this.BOARD_SIZE; x++) {
+        if (board[y][x] == 0) {
+          return new Move(x, y);
+        }
+      }
+    }
+    throw new GameOverException(0);
   }
 }

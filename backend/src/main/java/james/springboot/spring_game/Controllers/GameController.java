@@ -3,6 +3,7 @@ package james.springboot.spring_game.Controllers;
 import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidMoveException;
 import james.springboot.spring_game.Exceptions.WrongPlayerException;
+import james.springboot.spring_game.Models.Board;
 import james.springboot.spring_game.Models.Move;
 import james.springboot.spring_game.Services.AgentService;
 import james.springboot.spring_game.Services.GameService;
@@ -51,7 +52,8 @@ public class GameController {
       }
       //Below line plays a move. Need to do a copy of the board?
       int[][] boardDeepCopy = ((int[][]) gameService.getBoard(false).get("board"));
-      Move move = agentService.move(boardDeepCopy);
+      Board boardnew = new Board(boardDeepCopy);
+      Move move = agentService.move(boardnew);
       gameService.playMove(2, move.y, move.x);
       return new ResponseEntity<>("Played move", HttpStatus.OK);
     } catch (NullPointerException e) {
