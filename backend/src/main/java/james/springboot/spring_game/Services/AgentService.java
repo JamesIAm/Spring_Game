@@ -205,7 +205,7 @@ public class AgentService {
 
   // Returns a board with an additional square filled in at the x and y coords
   public int[][] simulateMove(int[][] board, int x, int y, int id) {
-    int[][] simulatedBoard = Utilities.deepCopyDoubleIntArray(board, BOARD_SIZE, BOARD_SIZE);
+    int[][] simulatedBoard = Utilities.deepCopyDoubleIntArray(board);
     simulatedBoard[y][x] = id;
     return simulatedBoard;
   }

@@ -5,8 +5,10 @@ import james.springboot.spring_game.Models.Pair;
 import java.util.ArrayList;
 
 public class Utilities {
-  public static int[][] deepCopyDoubleIntArray(int[][] prevArray, int FIRST_ARRAY_LENGTH, int SECOND_ARRAY_LENGTH) {
-    int[][] newBoard = new int[FIRST_ARRAY_LENGTH][SECOND_ARRAY_LENGTH];
+
+
+  public static int[][] deepCopyDoubleIntArray(int[][] prevArray) throws IndexOutOfBoundsException {
+    int[][] newBoard = new int[prevArray.length][prevArray[0].length];
     for (int index = 0; index < prevArray.length; index++) {
       newBoard[index] = prevArray[index].clone();
     }

@@ -56,7 +56,7 @@ public class Score {
   }
 
   public Score clone() {
-    return new Score(Utilities.deepCopyDoubleIntArray(score, 3, xInARow));
+    return new Score(Utilities.deepCopyDoubleIntArray(score));
   }
 
   public boolean winCheck() {
