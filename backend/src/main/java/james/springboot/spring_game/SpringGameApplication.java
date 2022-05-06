@@ -8,13 +8,13 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 @SpringBootApplication
 public class SpringGameApplication extends SpringBootServletInitializer {
 
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(SpringGameApplication.class);
-    }
+  @Override
+  protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+    return application.sources(SpringGameApplication.class);
+  }
 
-    public static void main(String[] args) {
-        SpringApplication.run(SpringGameApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(SpringGameApplication.class, args);
+  }
 
 }

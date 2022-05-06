@@ -1,5 +1,6 @@
 package james.springboot.spring_game.Services;
 
+import james.springboot.spring_game.Exceptions.FailedIfException;
 import james.springboot.spring_game.Exceptions.InvalidOpenessStateException;
 import james.springboot.spring_game.Models.*;
 import james.springboot.spring_game.Utilities.Utilities;
@@ -101,8 +102,9 @@ public class AgentService {
   // until maxDepth is reached
   // It searches depth first, and uses alpha beta pruning to cut down on the
   // number of searched nodes
-  public Move findMyMove(int[][] board, int depth, int maxDepth, Integer alpha, Integer beta,
-                         Score prevThisPlayerScore, Score prevOtherPlayerScore, ArrayList<Move> priorityMoves, int id) throws Exception, InvalidOpenessStateException {
+  public Move findMyMove(int[][] board, int depth, int maxDepth, Integer alpha, Integer beta, Score prevThisPlayerScore,
+                         Score prevOtherPlayerScore, ArrayList<Move> priorityMoves, int id) throws FailedIfException,
+      InvalidOpenessStateException, TimeoutException {
     if (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) > (this.startTime + this.SEARCH_TIME)) {
       throw new TimeoutException();
     }
@@ -271,7 +273,7 @@ public class AgentService {
   // Counts how the scores change when adding the move to the board.
   // Extends and joins any lines that attach to the move.
   public Pair<Score, ArrayList<Move>> countChangeAdd(int id, int[][] prevBoard, Score prevScore,
-                                                     Move move) throws Exception, InvalidOpenessStateException {
+                                                     Move move) throws FailedIfException, InvalidOpenessStateException {
     this.priorityMoves = new ArrayList<>();
     Score score = prevScore.clone();
     Integer y = move.y, x = move.x,
@@ -290,7 +292,7 @@ public class AgentService {
     return new Pair<>(score, this.priorityMoves);
   }
 
-  private void do2LinesIn1RenameMe(int[][] prevBoard, int playerId, Integer newMoveX, Integer newMoveY, Score score, int xChange, int yChange) throws Exception, InvalidOpenessStateException {
+  private void do2LinesIn1RenameMe(int[][] prevBoard, int playerId, Integer newMoveX, Integer newMoveY, Score score, int xChange, int yChange) throws FailedIfException, InvalidOpenessStateException {
     Pair<Integer, Openness> scoreDataPositive = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange, yChange);
     Pair<Integer, Openness> scoreDataNegative = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange * -1, yChange * -1);
 //        if (scoreDataPositive.a + scoreDataNegative.a == 4) {
@@ -305,7 +307,7 @@ public class AgentService {
   // And adds 1 score to the length
   //Triplet return is:
   //1:
-  public Pair<Integer, Openness> calculateNewLines(int[][] board, int currentPlayerId, int x, int y, int xChange, int yChange) throws Exception {
+  public Pair<Integer, Openness> calculateNewLines(int[][] board, int currentPlayerId, int x, int y, int xChange, int yChange) throws FailedIfException {
     for (int previousLineLength = 1; previousLineLength < this.X_IN_A_LINE + 1; previousLineLength++) {// Check positive horizontal
       int newX = x + (xChange * previousLineLength);
       int newY = y + (yChange * previousLineLength);
@@ -326,12 +328,12 @@ public class AgentService {
         return new Pair<>((previousLineLength - 1), Openness.CLOSED);
       }
     }
-    throw new Exception("Failed in calculate new lines function");
+    throw new FailedIfException("Failed in calculate new lines function");
   }
 
   // Finds lines that are no longer open ended and adjusts the score accordingly
   public Pair<Score, ArrayList<Move>> countChangeMinus(int id, int[][] prevBoard, Score prevScore,
-                                                       Move move) throws Exception {
+                                                       Move move) throws FailedIfException {
     this.priorityMoves = new ArrayList<>();
     // TODO: Reset priority moves twice?
     Score score = prevScore.clone();
@@ -352,7 +354,7 @@ public class AgentService {
   }
 
   // Finds the old index of the lines and returns a new index for them as well
-  public Pair<Openness, Integer> calculateOldLines(int[][] board, int id, int x, int y, Score prevScore, Integer xChange, Integer yChange) throws Exception {
+  public Pair<Openness, Integer> calculateOldLines(int[][] board, int id, int x, int y, Score prevScore, Integer xChange, Integer yChange) {
     // print("Changes", xChange, yChange)
     for (int previousLineLength = 1; previousLineLength < this.X_IN_A_LINE + 1; previousLineLength++) {// Check positive horizontal
       int newX = x + (xChange * previousLineLength);
