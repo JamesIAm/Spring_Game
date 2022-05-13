@@ -5,6 +5,7 @@ import james.springboot.spring_game.Exceptions.InvalidCellStateException;
 import james.springboot.spring_game.Exceptions.InvalidPlayerIdException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -214,30 +215,103 @@ public class BoardTest {
     );
   }
 
+  @Nested
+  class countLinesTests {
+    @Test
+    public void countLinesInDirection_with1SquareInTheMiddle_callsIncrementScoreOpen_4Times() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(5, 5, 1);
+      board.countLines(1, score);
+      Mockito.verify(score, times(4)).incrementScore(Openness.OPEN, 1);
+      Mockito.verify(score, times(4)).incrementScore(any(), any());
+    }
 
-  @Test
-  public void countLinesInDirection_with1SquareInTheMiddle_callsIncrementScoreOpen_4Times() throws InvalidPlayerIdException, InvalidCellStateException {
-    board.makeMove(5, 5, 1);
-    board.countLines(1, score);
-    Mockito.verify(score, times(4)).incrementScore(Openness.OPEN, 1);
-    Mockito.verify(score, times(4)).incrementScore(any(), any());
-  }
+    @Test
+    public void countLinesInDirection_with1SquareOnTheLeftEdge_callsIncrementScoreOpen_3TimesSemi_1TimesOpen() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(0, 5, 1);
+      board.countLines(1, score);
+      Mockito.verify(score, times(1)).incrementScore(Openness.OPEN, 1);
+      Mockito.verify(score, times(3)).incrementScore(Openness.SEMI, 1);
+      Mockito.verify(score, times(4)).incrementScore(any(), any());
+    }
 
-  @Test
-  public void countLinesInDirection_with1SquareOnTheLeftEdge_callsIncrementScoreOpen_1Times_Semi_3Times() throws InvalidPlayerIdException, InvalidCellStateException {
-    board.makeMove(0, 5, 1);
-    board.countLines(1, score);
-    Mockito.verify(score, times(1)).incrementScore(Openness.OPEN, 1);
-    Mockito.verify(score, times(3)).incrementScore(Openness.SEMI, 1);
-    Mockito.verify(score, times(4)).incrementScore(any(), any());
-  }
+    @Test
+    public void countLinesInDirection_with1SquareOnTheRightEdge_callsIncrementScoreOpen_3TimesSemi_1TimesOpen() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(9, 5, 1);
+      board.countLines(1, score);
+      Mockito.verify(score, times(1)).incrementScore(Openness.OPEN, 1);
+      Mockito.verify(score, times(3)).incrementScore(Openness.SEMI, 1);
+      Mockito.verify(score, times(4)).incrementScore(any(), any());
+    }
 
-  @Test
-  public void countLinesInDirection_with1SquareOnTheRightEdge_callsIncrementScoreOpen_1Times_Semi_3Times() throws InvalidPlayerIdException, InvalidCellStateException {
-    board.makeMove(0, 5, 1);
-    board.countLines(1, score);
-    Mockito.verify(score, times(1)).incrementScore(Openness.OPEN, 1);
-    Mockito.verify(score, times(3)).incrementScore(Openness.SEMI, 1);
-    Mockito.verify(score, times(4)).incrementScore(any(), any());
+    @Test
+    public void countLinesInDirection_with1SquareInTheTopLeft_callsIncrementScoreOpen_3TimesSemi_1TimesClosed() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(0, 0, 1);
+      board.countLines(1, score);
+      Mockito.verify(score, times(1)).incrementScore(Openness.CLOSED, 1);
+      Mockito.verify(score, times(3)).incrementScore(Openness.SEMI, 1);
+      Mockito.verify(score, times(4)).incrementScore(any(), any());
+    }
+
+    @Test
+    public void countLinesInDirection_with1SquareInTheBottomRight_callsIncrementScoreOpen_3TimesSemi_1TimesClosed() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(9, 9, 1);
+      board.countLines(1, score);
+      Mockito.verify(score, times(1)).incrementScore(Openness.CLOSED, 1);
+      Mockito.verify(score, times(3)).incrementScore(Openness.SEMI, 1);
+      Mockito.verify(score, times(4)).incrementScore(any(), any());
+    }
+
+    @Test
+    public void countLinesInDirection_with2SquaresInTheMiddle_callsIncrementScoreOpen_7TimesOpen() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(5, 5, 1);
+      board.makeMove(5, 6, 1);
+      board.countLines(1, score);
+      Mockito.verify(score, times(6)).incrementScore(Openness.OPEN, 1);
+      Mockito.verify(score, times(1)).incrementScore(Openness.OPEN, 2);
+      Mockito.verify(score, times(7)).incrementScore(any(), any());
+    }
+
+    @Test
+    public void countLinesInDirection_with2SquaresInTheMiddle_WithAGap_callsIncrementScoreOpen_7TimesOpen() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(5, 4, 1);
+      board.makeMove(5, 6, 1);
+      board.countLines(1, score);
+      Mockito.verify(score, times(8)).incrementScore(Openness.OPEN, 1);
+      Mockito.verify(score, times(8)).incrementScore(any(), any());
+    }
+
+    @Test
+    public void countLinesInDirection_with2SquaresAtTheTop_callsIncrementScoreOpen_7TimesOpen() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(5, 0, 1);
+      board.makeMove(5, 1, 1);
+      board.countLines(1, score);
+      Mockito.verify(score, times(4)).incrementScore(Openness.OPEN, 1);
+      Mockito.verify(score, times(2)).incrementScore(Openness.SEMI, 1);
+      Mockito.verify(score, times(1)).incrementScore(Openness.SEMI, 2);
+      Mockito.verify(score, times(7)).incrementScore(any(), any());
+    }
+
+    @Test
+    public void countLinesInDirection_with2SquaresAtTheTop_andAnOpponentBlocking_callsIncrementScoreOpen_7TimesOpen() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(5, 0, 1);
+      board.makeMove(5, 1, 1);
+      board.makeMove(5, 2, 2);
+      board.countLines(1, score);
+      Mockito.verify(score, times(4)).incrementScore(Openness.OPEN, 1);
+      Mockito.verify(score, times(2)).incrementScore(Openness.SEMI, 1);
+      Mockito.verify(score, times(1)).incrementScore(Openness.CLOSED, 2);
+      Mockito.verify(score, times(7)).incrementScore(any(), any());
+    }
+
+    @Test
+    public void countLinesInDirection_with2SquaresInTheMiddle_andAnOpponentInBetween_callsIncrementScoreOpen_7TimesOpen() throws InvalidPlayerIdException, InvalidCellStateException {
+      board.makeMove(5, 4, 1);
+      board.makeMove(5, 6, 1);
+      board.makeMove(5, 5, 2);
+      board.countLines(1, score);
+      Mockito.verify(score, times(6)).incrementScore(Openness.OPEN, 1);
+      Mockito.verify(score, times(2)).incrementScore(Openness.SEMI, 1);
+      Mockito.verify(score, times(8)).incrementScore(any(), any());
+    }
   }
 }

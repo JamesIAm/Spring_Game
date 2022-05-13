@@ -145,33 +145,34 @@ public class Board {
         int currentCell = board[cell.b][cell.a];
         //------------If next tile is this players id, increment the length
         if (currentCell == playerId) {
-          if (/*length == 0 && */lastNumber == 0) {
+          //Found redundancy here: if (length == 0 && lastNumber == 0) { - Yay for testing
+          if (lastNumber == 0) {
             openEnded = Openness.SEMI;
           }
           length += 1;
         } else if (length > 0) {
-          if (openEnded == Openness.SEMI /*&& currentCell == 0*/) {
+          if (openEnded == Openness.SEMI && currentCell == 0) {
             score.incrementScore(Openness.OPEN, length);
-          } else if (/*openEnded == Openness.SEMI || */currentCell == 0) {
+          } else if (openEnded == Openness.SEMI || currentCell == 0) {
             score.incrementScore(Openness.SEMI, length);
-          }// else {
-//            score.incrementScore(Openness.CLOSED, length);
-//          }
+          } else {
+            score.incrementScore(Openness.CLOSED, length);
+          }
           length = 0;
-//          openEnded = Openness.CLOSED;
+          openEnded = Openness.CLOSED;
         }
         lastNumber = currentCell;
 
       }
-//      if (length > 0) {
-//        if (openEnded != Openness.CLOSED) {
-//          score.incrementScore(Openness.SEMI, length);
-//        } else {
-//          score.incrementScore(Openness.CLOSED, length);
-//        }
-//      }
-//      openEnded = Openness.CLOSED;
-//      length = 0;
+      if (length > 0) {
+        if (openEnded != Openness.CLOSED) {
+          score.incrementScore(Openness.SEMI, length);
+        } else {
+          score.incrementScore(Openness.CLOSED, length);
+        }
+      }
+      openEnded = Openness.CLOSED;
+      length = 0;
       lastNumber = -1;
     }
   }
