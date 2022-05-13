@@ -244,8 +244,8 @@ public class AgentService {
     for (int[] xyChange : new int[][]{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {1, 1}, {1, -1},
         {1, 0}, {1, 1}}) {
       // print(this.calculateOldLines(prevBoard, id, x, y, score, xChange, yChange))
-      Pair<Openness, Integer> oldLineData = this.calculateOldLines(prevBoard, id, x, y, score, xyChange[0],
-          xyChange[0]);
+      Pair<Openness, Integer> oldLineData = this.calculateOldLines(prevBoard, id, x, y, xyChange[0],
+          xyChange[1]);
       // print(prevIndex, newIndex, "returned")
       if (oldLineData.b > 0) {
         score.decreaseOpeness(oldLineData);
@@ -256,7 +256,7 @@ public class AgentService {
   }
 
   // Finds the old index of the lines and returns a new index for them as well
-  public Pair<Openness, Integer> calculateOldLines(int[][] board, int id, int x, int y, Score prevScore, Integer xChange, Integer yChange) {
+  public Pair<Openness, Integer> calculateOldLines(int[][] board, int id, int x, int y, Integer xChange, Integer yChange) {
     // print("Changes", xChange, yChange)
     for (int previousLineLength = 1; previousLineLength < this.X_IN_A_LINE + 1; previousLineLength++) {// Check positive horizontal
       int newX = x + (xChange * previousLineLength);
@@ -266,19 +266,14 @@ public class AgentService {
         int value = board[newY][newX];
         if (value == 0) {
           // If it is now semi open. The previous line was open
-          this.priorityMoves.add(new Move(newX, newY));
+//          this.priorityMoves.add(new Move(newX, newY));
           //  print(this.priorityMoves)
           return new Pair<>(Openness.OPEN, previousLineLength - 1);
         } else if (value != id) {
           // If it is now closed, the previous line was semi open
           return new Pair<>(Openness.SEMI, previousLineLength - 1);
         }
-        //  else:
-        //      print(value, i)
-        //      print(board)
-        //      print(newY, newX)
       } else {
-        //  print(((i-1)+(this.X_IN_A_LINE+1)), (i-1))
         return new Pair<>(Openness.SEMI, previousLineLength - 1);
       }
     }

@@ -176,4 +176,28 @@ public class Board {
       lastNumber = -1;
     }
   }
+
+  public Pair<Openness, Integer> calculateLinesNextToPlayedMoveAndReduceTheirOpenness(int id, int x, int y, Integer xChange, Integer yChange) {
+//    for (int previousLineLength = 1; previousLineLength < this.X_IN_A_LINE + 1; previousLineLength++) {// Check positive horizontal
+//      int newX = x + (xChange * previousLineLength);
+//      int newY = y + (yChange * previousLineLength);
+//      // print(newY, newX)
+//      if (newX < this.BOARD_SIZE && newY < this.BOARD_SIZE && newX >= 0 && newY >= 0) {
+//        int value = board[newY][newX];
+//        if (value == 0) {
+//          // If it is now semi open. The previous line was open
+////          this.priorityMoves.add(new Move(newX, newY));
+//          //  print(this.priorityMoves)
+//          return new Pair<>(Openness.OPEN, previousLineLength - 1);
+//        } else if (value != id) {
+//          // If it is now closed, the previous line was semi open
+//          return new Pair<>(Openness.SEMI, previousLineLength - 1);
+//        }
+//      } else {
+//        return new Pair<>(Openness.SEMI, previousLineLength - 1);
+//      }
+//    }
+//    return new Pair<>(Openness.CLOSED, 0);
+    return null;
+  }
 }

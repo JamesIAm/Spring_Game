@@ -314,4 +314,10 @@ public class BoardTest {
       Mockito.verify(score, times(8)).incrementScore(any(), any());
     }
   }
+
+  @Test
+  public void calculateLinesNextToPlayedMoveAndReduceTheirOpenness() throws InvalidPlayerIdException, InvalidCellStateException {
+    board.makeMove(6, 5, 1);
+    Pair<Openness, Integer> reduction = board.calculateLinesNextToPlayedMoveAndReduceTheirOpenness(1, 5, 5, 1, 0);
+  }
 }
