@@ -8,10 +8,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.List;
 
 @SpringBootTest
 public class BoardTest {
+
+  @Mock
+  private Score score;
+
   Board board = new Board();
 
   @BeforeEach
@@ -114,4 +121,95 @@ public class BoardTest {
     }
     Assertions.assertThrows(GameOverException.class, () -> board.findValidMove());
   }
+
+  private void assertLineOfPairsIsEqual(List<Pair<Integer, Integer>> expectedValues, List<Pair<Integer, Integer>> generatedValues) {
+    for (int index = 0; index < expectedValues.size(); index++) {
+      Assertions.assertEquals(expectedValues.get(index).a, generatedValues.get(index).a);
+      Assertions.assertEquals(expectedValues.get(index).b, generatedValues.get(index).b);
+      Assertions.assertEquals(expectedValues.size(), generatedValues.size());
+    }
+  }
+
+  @Test
+  public void defineHorizontalCoordsResultsInCorrectOrders() {
+    List<Pair<Integer, Integer>> firstLine = List.of(
+        new Pair<>(0, 0), new Pair<>(1, 0), new Pair<>(2, 0), new Pair<>(3, 0), new Pair<>(4, 0),
+        new Pair<>(5, 0), new Pair<>(6, 0), new Pair<>(7, 0), new Pair<>(8, 0), new Pair<>(9, 0)
+    );
+    List<Pair<Integer, Integer>> lastLine = List.of(
+        new Pair<>(0, 9), new Pair<>(1, 9), new Pair<>(2, 9), new Pair<>(3, 9), new Pair<>(4, 9),
+        new Pair<>(5, 9), new Pair<>(6, 9), new Pair<>(7, 9), new Pair<>(8, 9), new Pair<>(9, 9)
+    );
+    List<List<Pair<Integer, Integer>>> generatedCoords = Board.defineHorizontalCoords();
+    Assertions.assertAll(
+        () -> assertLineOfPairsIsEqual(firstLine, generatedCoords.get(0)),
+        () -> assertLineOfPairsIsEqual(lastLine, generatedCoords.get(9)),
+        () -> Assertions.assertEquals(10, generatedCoords.size())
+    );
+  }
+
+  @Test
+  public void defineVerticalCoordsResultsInCorrectOrders() {
+    List<Pair<Integer, Integer>> firstLine = List.of(
+        new Pair<>(0, 0), new Pair<>(0, 1), new Pair<>(0, 2), new Pair<>(0, 3), new Pair<>(0, 4),
+        new Pair<>(0, 5), new Pair<>(0, 6), new Pair<>(0, 7), new Pair<>(0, 8), new Pair<>(0, 9)
+    );
+    List<Pair<Integer, Integer>> lastLine = List.of(
+        new Pair<>(9, 0), new Pair<>(9, 1), new Pair<>(9, 2), new Pair<>(9, 3), new Pair<>(9, 4),
+        new Pair<>(9, 5), new Pair<>(9, 6), new Pair<>(9, 7), new Pair<>(9, 8), new Pair<>(9, 9)
+    );
+    List<List<Pair<Integer, Integer>>> generatedCoords = Board.defineVerticalCoords();
+    Assertions.assertAll(
+        () -> assertLineOfPairsIsEqual(firstLine, generatedCoords.get(0)),
+        () -> assertLineOfPairsIsEqual(lastLine, generatedCoords.get(9)),
+        () -> Assertions.assertEquals(10, generatedCoords.size())
+    );
+  }
+
+  @Test
+  public void defineDownDiagCoordsResultsInCorrectOrders() {
+    List<Pair<Integer, Integer>> firstLine = List.of(
+        new Pair<>(0, 9)
+    );
+    List<Pair<Integer, Integer>> lastLine = List.of(
+        new Pair<>(9, 0)
+    );
+    List<Pair<Integer, Integer>> midLine = List.of(
+        new Pair<>(0, 0), new Pair<>(1, 1), new Pair<>(2, 2), new Pair<>(3, 3), new Pair<>(4, 4),
+        new Pair<>(5, 5), new Pair<>(6, 6), new Pair<>(7, 7), new Pair<>(8, 8), new Pair<>(9, 9)
+    );
+    List<List<Pair<Integer, Integer>>> generatedCoords = Board.defineDownDiagCoords();
+    Assertions.assertAll(
+        () -> assertLineOfPairsIsEqual(firstLine, generatedCoords.get(0)),
+        () -> assertLineOfPairsIsEqual(lastLine, generatedCoords.get(18)),
+        () -> assertLineOfPairsIsEqual(midLine, generatedCoords.get(9)),
+        () -> Assertions.assertEquals(19, generatedCoords.size())
+    );
+  }
+
+  @Test
+  public void defineUpDiagCoordsResultsInCorrectOrders() {
+    List<Pair<Integer, Integer>> firstLine = List.of(
+        new Pair<>(0, 0)
+    );
+    List<Pair<Integer, Integer>> lastLine = List.of(
+        new Pair<>(9, 9)
+    );
+    List<Pair<Integer, Integer>> midLine = List.of(
+        new Pair<>(0, 9), new Pair<>(1, 8), new Pair<>(2, 7), new Pair<>(3, 6), new Pair<>(4, 5),
+        new Pair<>(5, 4), new Pair<>(6, 3), new Pair<>(7, 2), new Pair<>(8, 1), new Pair<>(9, 0)
+    );
+
+    List<List<Pair<Integer, Integer>>> generatedCoords = Board.defineUpDiagCoords();
+    Assertions.assertAll(
+        () -> assertLineOfPairsIsEqual(firstLine, generatedCoords.get(0)),
+        () -> assertLineOfPairsIsEqual(lastLine, generatedCoords.get(18)),
+        () -> assertLineOfPairsIsEqual(midLine, generatedCoords.get(9)),
+        () -> Assertions.assertEquals(19, generatedCoords.size())
+    );
+  }
+
+
+//  @Test
+//  public void countLinesInDirection_With3InALine
 }

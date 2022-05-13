@@ -73,7 +73,6 @@ public class Utilities {
   }
 
   private static void defineUpDiagCoords(int BOARD_SIZE, ArrayList<ArrayList<Pair<Integer, Integer>>> upDiagCoords) {
-    //Up diag
     for (int startY = 0; startY < BOARD_SIZE; startY++) {
       ArrayList<Pair<Integer, Integer>> lineOfMoves = new ArrayList<>();
       for (int y = startY, x = 0; y >= 0; y--, x++) {
