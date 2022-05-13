@@ -1,8 +1,6 @@
 package james.springboot.spring_game.Services;
 
-import james.springboot.spring_game.Exceptions.FailedIfException;
-import james.springboot.spring_game.Exceptions.GameOverException;
-import james.springboot.spring_game.Exceptions.InvalidOpenessStateException;
+import james.springboot.spring_game.Exceptions.*;
 import james.springboot.spring_game.Models.*;
 import james.springboot.spring_game.Utilities.Utilities;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +16,9 @@ import java.util.concurrent.TimeoutException;
 @Service
 @Slf4j
 public class AgentService {
-  private final Integer ID = 2;
-  private final Integer BOARD_SIZE = 10;
+  private static final Integer ID = 2;
+  private static final Integer OTHER_PLAYER_ID = 1;
+  private static final Integer BOARD_SIZE = 10;
   private final Integer X_IN_A_LINE = 5;
   private final Integer MAX_DEPTH = 10; // Maximum depth the program will search to. Must be greater than 1
 
@@ -49,9 +48,9 @@ public class AgentService {
   // Iterates depth of search so if it runs out of time, it will default to the
   // last found best move
   // If the program throws any error it defaults to a valid value
-  public Move move(Board boardnew) throws GameOverException {
-    Move prevBestMove = boardnew.findValidMove();
-    int[][] board = boardnew.getBoard();
+  public Move move(Board board) throws GameOverException {
+    Move prevBestMove = board.findValidMove();
+
     //Starts off with a valid move
 
 
@@ -59,8 +58,8 @@ public class AgentService {
       this.startTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 
       // this.counter = 0
-      Score myStartScore = this.countLines(board, this.ID);
-      Score theirStartScore = this.countLines(board, 1);
+      Score myStartScore = board.countLines(ID, new Score());
+      Score theirStartScore = board.countLines(OTHER_PLAYER_ID, new Score());
       for (int depth = 1; depth < this.MAX_DEPTH; depth++) {
         Move bestMove = this.findMyMove(board, 0, depth, -10000, 10000, myStartScore, theirStartScore,
             new ArrayList<>(), this.ID);
@@ -92,9 +91,9 @@ public class AgentService {
   // until maxDepth is reached
   // It searches depth first, and uses alpha beta pruning to cut down on the
   // number of searched nodes
-  public Move findMyMove(int[][] board, int depth, int maxDepth, Integer alpha, Integer beta, Score prevThisPlayerScore,
+  public Move findMyMove(Board board, int depth, int maxDepth, Integer alpha, Integer beta, Score prevThisPlayerScore,
                          Score prevOtherPlayerScore, ArrayList<Move> priorityMoves, int id) throws FailedIfException,
-      InvalidOpenessStateException, TimeoutException {
+      InvalidOpenessStateException, TimeoutException, InvalidPlayerIdException, InvalidCellStateException {
     if (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) > (this.startTime + this.SEARCH_TIME)) {
       throw new TimeoutException();
     }
@@ -103,19 +102,19 @@ public class AgentService {
       int otherPlayerId = id == 1 ? 2 : 1;
       // print("Alpha: ", alpha, "\tBeta: ", beta)
       //TDOD: VALIDMOVES INCLUDES ALREADY DONE MOVES???
-      ArrayList<Move> validMoves = this.findMoves(board, priorityMoves);
+      ArrayList<Move> validMoves = this.findMoves(board.getBoard(), priorityMoves);
       Move bestMove = new Move(-10000);
       for (Move move : validMoves) {
         log.debug(depthSpace + move.x + " " + move.y);
-        Pair<Score, ArrayList<Move>> thisPlayerChange = this.countChangeAdd(id, board,
+        Pair<Score, ArrayList<Move>> thisPlayerChange = this.countChangeAdd(id, board.getBoard(),
             prevThisPlayerScore, move);
-        Pair<Score, ArrayList<Move>> otherPlayerChange = this.countChangeMinus(otherPlayerId, board,
+        Pair<Score, ArrayList<Move>> otherPlayerChange = this.countChangeMinus(otherPlayerId, board.getBoard(),
             prevOtherPlayerScore, move);
         Score thisPlayerScore = thisPlayerChange.a;
         Score otherPlayerScore = otherPlayerChange.a;
         ArrayList<Move> newPriorityMoves = thisPlayerChange.b;
         newPriorityMoves.addAll(otherPlayerChange.b);
-        int[][] simulatedBoard = this.simulateMove(board, move.x, move.y, id);
+        Board simulatedBoard = this.simulateMove(board, move.x, move.y, id);
         if (thisPlayerScore.winCheck()) {
           // Check if the game is won
           move.score = 1000;
@@ -170,94 +169,11 @@ public class AgentService {
     }
   }
 
-  // Almost identical to findMyMove, but separated out to make tracking the ID
-  // simpler.
-  // In hindsight, separating these two was a mistake, as a number of changes had
-  // to be done to both functions
-  // public Move findTheirMove(int[][]board, int depth, int maxDepth, int
-  // alpha, int beta, Integer[] prevThisPlayerScore,
-  // Integer[] prevOtherPlayerScore, ArrayList<Move> priorityMoves) {
-  // if(time()>(this.startTime+this.SEARCH_TIME)){return
-  // 0,None;}if(depth<maxDepth){validMoves=this.findMoves(board,priorityMoves.copy());bestScore=None;bestMove=();for(int
-  // move:validMoves){thisPlayerScore,priorityMoves1=this.countChangeAdd(this.ID*-1,board,prevThisPlayerScore.copy(),move);otherPlayerScore,priorityMoves2=this.countChangeMinus(this.ID,board,prevOtherPlayerScore.copy(),move);newPriorityMoves=priorityMoves1+priorityMoves2;simulatedBoard=this.simulateMove(board,move[1],move[0],this.ID*-1);if(thisPlayerScore[this.INDEXES[0]]>0
-  // or thisPlayerScore[this.INDEXES[1]]>0 or
-  // thisPlayerScore[this.INDEXES[2]]>0){return-1000,move;}else{score,newMove=this.findMyMove(simulatedBoard,depth+1,maxDepth,alpha,beta,otherPlayerScore,thisPlayerScore,newPriorityMoves);if(score==None){break;}else{if(bestScore==None){bestScore=score;bestMove=move;}
-  // // pick the minimum score
-  // if(score<bestScore){bestScore=score;bestMove=move;}if(bestScore<=alpha){ //
-  // If the score is less than the
-  // // current max path, return the score
-  // // and trim the branch
-  // break;}if(bestScore<beta){beta=bestScore;}}}if(time()>(this.startTime+this.SEARCH_TIME)){return
-  // 0,None;}else{return bestScore,bestMove;}}else{
-  // // this.counter+=1
-  // myScore=prevOtherPlayerScore;theirScore=prevThisPlayerScore;return(sum(this.CURRENT_PLAYER_WEIGHTS*myScore)-sum(this.NEXT_PLAYER_WEIGHTS*theirScore)),[];}
-  // }
-
   // Returns a board with an additional square filled in at the x and y coords
-  public int[][] simulateMove(int[][] board, int x, int y, int id) {
-    int[][] simulatedBoard = Utilities.deepCopyDoubleIntArray(board);
-    simulatedBoard[y][x] = id;
+  public Board simulateMove(Board board, int x, int y, int id) throws InvalidPlayerIdException, InvalidCellStateException {
+    Board simulatedBoard = board.deepCopyBoard();
+    simulatedBoard.makeMove(x, y, id);
     return simulatedBoard;
-  }
-
-  // Old count lines function, only used for the initial count as it's much slower
-  public Score countLines(int[][] board, int id) {
-    Score score = new Score();
-    this.countLinesInDirection(board, this.horizontalCoords, id, score);
-    this.countLinesInDirection(board, this.verticalCoords, id, score);
-    this.countLinesInDirection(board, this.downDiagCoords, id, score);
-    this.countLinesInDirection(board, this.upDiagCoords, id, score);
-
-    return score; // Fix
-    // to
-    // have
-    // weights
-  }
-
-  // Goes through row by row, and measures the size of every consectutive line and
-  // whether it's open ended or not
-  public void countLinesInDirection(int[][] board, ArrayList<ArrayList<Pair<Integer, Integer>>> orderedItems,
-                                    int id, Score score) {
-    int length = 0;
-    Openness openEnded = Openness.CLOSED;
-    int lastNumber = -1; // Represents the last number observed, to see if lines are open ended or not.
-    // At the start of every line it defaults to the -1, so lines
-    // that start at the edge of the board are not open ended
-    for (ArrayList<Pair<Integer, Integer>> line : orderedItems) {
-      for (Pair<Integer, Integer> cell : line) {
-        int currentCell = board[cell.b][cell.a];
-        //If next tile is this players id, increment the length
-        if (currentCell == id) {
-          if (length == 0 && lastNumber == 0) {
-            openEnded = Openness.SEMI;
-          }
-          length += 1;
-        } else if (length > 0) {
-          if (openEnded == Openness.SEMI && currentCell == 0) {
-            score.incrementScore(Openness.OPEN, length);
-          } else if (openEnded == Openness.SEMI || currentCell == 0) {
-            score.incrementScore(Openness.SEMI, length);
-          } else {
-            score.incrementScore(Openness.CLOSED, length);
-          }
-          length = 0;
-          openEnded = Openness.CLOSED;
-        }
-        lastNumber = currentCell;
-
-      }
-      if (length > 0) {
-        if (openEnded != Openness.CLOSED) {
-          score.incrementScore(Openness.SEMI, length);
-        } else {
-          score.incrementScore(Openness.CLOSED, length);
-        }
-      }
-      openEnded = Openness.CLOSED;
-      length = 0;
-      lastNumber = -1;
-    }
-
   }
 
   // Counts how the scores change when adding the move to the board.
@@ -270,7 +186,7 @@ public class AgentService {
         horLength = 1, verLength = 1, upDiLength = 1, doDiLength = 1, horOpeness = 0, verOpeness = 0,
         upDiOpeness = 0, doDiOpeness = 0;
     Triplet<Integer, Integer, Integer> prevIndexLengthOpeness;
-    // TODO: Does openness pass by value or reference, should pass by refernce
+    // TODO: Does openness pass by value or reference, should pass by reference
     do2LinesIn1RenameMe(prevBoard, id, x, y, score, 0, 1);
     do2LinesIn1RenameMe(prevBoard, id, x, y, score, 1, 1);
     do2LinesIn1RenameMe(prevBoard, id, x, y, score, 1, 0);
@@ -285,10 +201,6 @@ public class AgentService {
   private void do2LinesIn1RenameMe(int[][] prevBoard, int playerId, Integer newMoveX, Integer newMoveY, Score score, int xChange, int yChange) throws FailedIfException, InvalidOpenessStateException {
     Pair<Integer, Openness> scoreDataPositive = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange, yChange);
     Pair<Integer, Openness> scoreDataNegative = this.calculateNewLines(prevBoard, playerId, newMoveX, newMoveY, xChange * -1, yChange * -1);
-//        if (scoreDataPositive.a + scoreDataNegative.a == 4) {
-//            //TODO: Debug on this line
-//            int a = 1;
-//        }
     score.increaseScore(scoreDataPositive, scoreDataNegative);
   }
 
