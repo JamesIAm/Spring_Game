@@ -1,4 +1,4 @@
-![](https://img.shields.io/badge/Java_Test_Coverage-49%25-red)
+![](https://img.shields.io/badge/Java_Test_Coverage-50%25-orange)
 
 Plan is to put a gomuku agent on here and then make it able to be played against
 

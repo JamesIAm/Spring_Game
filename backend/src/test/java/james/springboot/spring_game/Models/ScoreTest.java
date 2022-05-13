@@ -14,7 +14,7 @@ public class ScoreTest {
 
   @Test
   public void whenAScoreIsCreated_allValuesAre0() {
-    Score testScore = new Score(X_IN_A_ROW);
+    Score testScore = new Score();
     int[][] scoreFromTest = testScore.getScore();
     Assertions.assertAll(
         () -> Assertions.assertArrayEquals(scoreFromTest[0], new int[]{0, 0, 0, 0, 0, 0}),
@@ -25,7 +25,7 @@ public class ScoreTest {
 
   @Test
   public void whenAScoreIsCreatedWithAXInARowOf5_theScoreObjectContains3ArraysOfLength6() {
-    Score testScore = new Score(X_IN_A_ROW);
+    Score testScore = new Score();
     int[][] scoreFromTest = testScore.getScore();
     Assertions.assertAll(
         () -> Assertions.assertEquals(3, scoreFromTest.length),
@@ -37,7 +37,7 @@ public class ScoreTest {
 
   @Test
   public void whenAScoreIsCreatedFromAnExistingScore_theTwoScoresHaveTheSameValues() {
-    Score originalScore = new Score(X_IN_A_ROW);
+    Score originalScore = new Score();
     originalScore.incrementScore(Openness.CLOSED, 1);
     originalScore.incrementScore(Openness.SEMI, 3);
     originalScore.incrementScore(Openness.OPEN, 5);
@@ -56,7 +56,7 @@ public class ScoreTest {
     Openness previousOpenness2 = Openness.OPEN;
     int previousLength1 = 1;
     int previousLength2 = 2;
-    Score originalScore = new Score(X_IN_A_ROW);
+    Score originalScore = new Score();
     originalScore.incrementScore(previousOpenness1, previousLength1);
     originalScore.incrementScore(previousOpenness2, previousLength2);
     originalScore.increaseScore(new Pair<>(previousLength1, previousOpenness1), new Pair<>(previousLength2, previousOpenness2));
@@ -74,7 +74,7 @@ public class ScoreTest {
     Openness previousOpenness2 = Openness.OPEN;
     int previousLength1 = 1;
     int previousLength2 = 3;
-    Score originalScore = new Score(X_IN_A_ROW);
+    Score originalScore = new Score();
     originalScore.incrementScore(previousOpenness1, previousLength1);
     originalScore.incrementScore(previousOpenness2, previousLength2);
     originalScore.increaseScore(new Pair<>(previousLength1, previousOpenness1), new Pair<>(previousLength2, previousOpenness2));
@@ -92,7 +92,7 @@ public class ScoreTest {
     Openness previousOpenness2 = Openness.SEMI;
     int previousLength1 = 2;
     int previousLength2 = 1;
-    Score originalScore = new Score(X_IN_A_ROW);
+    Score originalScore = new Score();
     originalScore.incrementScore(previousOpenness1, previousLength1);
     originalScore.incrementScore(previousOpenness2, previousLength2);
     originalScore.increaseScore(new Pair<>(previousLength1, previousOpenness1), new Pair<>(previousLength2, previousOpenness2));
@@ -106,7 +106,7 @@ public class ScoreTest {
 
   @Test
   public void cloneStopsChangesFromReflectingInThePreviousArray() {
-    Score originalScore = new Score(X_IN_A_ROW);
+    Score originalScore = new Score();
     Score newScore = originalScore.clone();
     newScore.incrementScore(Openness.CLOSED, 0);
     Assertions.assertAll(
@@ -117,8 +117,8 @@ public class ScoreTest {
 
   @Test
   public void winCheck() {
-    Score notWon = new Score(X_IN_A_ROW);
-    Score hasWon = new Score(X_IN_A_ROW);
+    Score notWon = new Score();
+    Score hasWon = new Score();
     notWon.incrementScore(Openness.CLOSED, 4);
     hasWon.incrementScore(Openness.OPEN, 5);
     Assertions.assertAll(
@@ -129,7 +129,7 @@ public class ScoreTest {
 
   @Test
   void decreaseOpeness() {
-    Score originalScore = new Score(X_IN_A_ROW);
+    Score originalScore = new Score();
     originalScore.incrementScore(Openness.SEMI, 3);
     int[][] scoreFromTest = originalScore.getScore();
     originalScore.decreaseOpeness(new Pair<>(Openness.SEMI, 3));
@@ -142,8 +142,8 @@ public class ScoreTest {
 
   @Test
   public void calculateScore_0IndexDoesntIncreaseScore() {
-    Score score1 = new Score(X_IN_A_ROW);
-    Score score2 = new Score(X_IN_A_ROW);
+    Score score1 = new Score();
+    Score score2 = new Score();
     score1.incrementScore(Openness.CLOSED, 0);
     score1.incrementScore(Openness.SEMI, 0);
     score1.incrementScore(Openness.OPEN, 0);
@@ -152,7 +152,7 @@ public class ScoreTest {
 
   @Test
   public void calculateScore_5IndexHasScoreOf1000() {
-    Score score1 = new Score(X_IN_A_ROW);
+    Score score1 = new Score();
     score1.incrementScore(Openness.CLOSED, 5);
     score1.incrementScore(Openness.SEMI, 5);
     score1.incrementScore(Openness.OPEN, 5);
@@ -164,8 +164,8 @@ public class ScoreTest {
     for (Openness openness : new Openness[]{Openness.CLOSED, Openness.SEMI, Openness.OPEN}) {
       for (int scoreIndex = 1; scoreIndex < X_IN_A_ROW; scoreIndex++) {
         try {
-          Score score1 = new Score(X_IN_A_ROW);
-          Score score2 = new Score(X_IN_A_ROW);
+          Score score1 = new Score();
+          Score score2 = new Score();
           score1.incrementScore(openness, scoreIndex);
           score2.incrementScore(openness, scoreIndex);
           Assertions.assertTrue(score1.calculateScore(false) > score2.calculateScore(true));
@@ -185,8 +185,8 @@ public class ScoreTest {
       for (int scoreIndex = 1; scoreIndex < X_IN_A_ROW; scoreIndex++) {
         for (boolean currentPlayer : new boolean[]{false, true}) {
           try {
-            Score score1 = new Score(X_IN_A_ROW);
-            Score score2 = new Score(X_IN_A_ROW);
+            Score score1 = new Score();
+            Score score2 = new Score();
             score1.incrementScore(openness, scoreIndex);
             score2.incrementScore(secondOpeness, scoreIndex);
             Assertions.assertTrue(score1.calculateScore(currentPlayer) < score2.calculateScore(currentPlayer));

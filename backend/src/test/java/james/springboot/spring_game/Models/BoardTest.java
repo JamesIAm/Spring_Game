@@ -6,14 +6,19 @@ import james.springboot.spring_game.Exceptions.InvalidPlayerIdException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-@SpringBootTest
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+
+@ExtendWith({MockitoExtension.class})
 public class BoardTest {
 
   @Mock
@@ -210,6 +215,29 @@ public class BoardTest {
   }
 
 
-//  @Test
-//  public void countLinesInDirection_With3InALine
+  @Test
+  public void countLinesInDirection_with1SquareInTheMiddle_callsIncrementScoreOpen_4Times() throws InvalidPlayerIdException, InvalidCellStateException {
+    board.makeMove(5, 5, 1);
+    board.countLines(1, score);
+    Mockito.verify(score, times(4)).incrementScore(Openness.OPEN, 1);
+    Mockito.verify(score, times(4)).incrementScore(any(), any());
+  }
+
+  @Test
+  public void countLinesInDirection_with1SquareOnTheLeftEdge_callsIncrementScoreOpen_1Times_Semi_3Times() throws InvalidPlayerIdException, InvalidCellStateException {
+    board.makeMove(0, 5, 1);
+    board.countLines(1, score);
+    Mockito.verify(score, times(1)).incrementScore(Openness.OPEN, 1);
+    Mockito.verify(score, times(3)).incrementScore(Openness.SEMI, 1);
+    Mockito.verify(score, times(4)).incrementScore(any(), any());
+  }
+
+  @Test
+  public void countLinesInDirection_with1SquareOnTheRightEdge_callsIncrementScoreOpen_1Times_Semi_3Times() throws InvalidPlayerIdException, InvalidCellStateException {
+    board.makeMove(0, 5, 1);
+    board.countLines(1, score);
+    Mockito.verify(score, times(1)).incrementScore(Openness.OPEN, 1);
+    Mockito.verify(score, times(3)).incrementScore(Openness.SEMI, 1);
+    Mockito.verify(score, times(4)).incrementScore(any(), any());
+  }
 }

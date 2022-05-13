@@ -125,4 +125,54 @@ public class Board {
     }
     return upDiagCoords;
   }
+
+  public Score countLines(int playerId, Score score) {
+    this.countLinesInDirection(HORIZONTAL_COORDS, playerId, score);
+    this.countLinesInDirection(VERTICAL_COORDS, playerId, score);
+    this.countLinesInDirection(DOWN_DIAG_COORDS, playerId, score);
+    this.countLinesInDirection(UP_DIAG_COORDS, playerId, score);
+    return score;
+  }
+
+  private void countLinesInDirection(List<List<Pair<Integer, Integer>>> orderedItems, int playerId, Score score) {
+    int length = 0;
+    Openness openEnded = Openness.CLOSED;
+    int lastNumber = -1; // ---------Represents the last number observed, to see if lines are open ended or not.
+    // ---------At the start of every line it defaults to the -1, so lines
+    // ---------that start at the edge of the board are not open ended
+    for (List<Pair<Integer, Integer>> line : orderedItems) {
+      for (Pair<Integer, Integer> cell : line) {
+        int currentCell = board[cell.b][cell.a];
+        //------------If next tile is this players id, increment the length
+        if (currentCell == playerId) {
+          if (/*length == 0 && */lastNumber == 0) {
+            openEnded = Openness.SEMI;
+          }
+          length += 1;
+        } else if (length > 0) {
+          if (openEnded == Openness.SEMI /*&& currentCell == 0*/) {
+            score.incrementScore(Openness.OPEN, length);
+          } else if (/*openEnded == Openness.SEMI || */currentCell == 0) {
+            score.incrementScore(Openness.SEMI, length);
+          }// else {
+//            score.incrementScore(Openness.CLOSED, length);
+//          }
+          length = 0;
+//          openEnded = Openness.CLOSED;
+        }
+        lastNumber = currentCell;
+
+      }
+//      if (length > 0) {
+//        if (openEnded != Openness.CLOSED) {
+//          score.incrementScore(Openness.SEMI, length);
+//        } else {
+//          score.incrementScore(Openness.CLOSED, length);
+//        }
+//      }
+//      openEnded = Openness.CLOSED;
+//      length = 0;
+      lastNumber = -1;
+    }
+  }
 }

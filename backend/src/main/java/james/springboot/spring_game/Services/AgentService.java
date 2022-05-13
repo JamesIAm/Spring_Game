@@ -202,7 +202,7 @@ public class AgentService {
 
   // Old count lines function, only used for the initial count as it's much slower
   public Score countLines(int[][] board, int id) {
-    Score score = new Score(X_IN_A_LINE);
+    Score score = new Score();
     this.countLinesInDirection(board, this.horizontalCoords, id, score);
     this.countLinesInDirection(board, this.verticalCoords, id, score);
     this.countLinesInDirection(board, this.downDiagCoords, id, score);
