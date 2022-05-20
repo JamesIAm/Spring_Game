@@ -176,6 +176,36 @@ public class AgentService {
     return simulatedBoard;
   }
 
+  public Score caculateChangesToLines(int id, Board board, Score currentPlayerScore, Score otherPlayerScore, Move move) {
+
+//    this.priorityMoves = new ArrayList<>();
+//    // TODO: Reset priority moves twice?
+//    Score score = prevScore.clone();
+//    int y = move.y;
+//    int x = move.x;
+    for (int[] xyChange : new int[][]{
+        {0, -1},
+        {-1, -1},
+        {-1, 0},
+        {-1, 1},
+        {0, 1},
+        {1, 1},
+        {1, 0},
+        {1, -1},
+    }) {
+      Triplet<Openness, Integer, Integer> oldLineData = board.findLinesNextToPlayedMove(move.x, move.y, xyChange[0],
+          xyChange[1]);
+//      if (oldLineData.b > 0) {
+//        score.decreaseOpeness(oldLineData);
+//      }
+//
+//    }
+//    return new Pair<>(score, this.priorityMoves);
+    }
+    return null;
+  }
+
+
   // Counts how the scores change when adding the move to the board.
   // Extends and joins any lines that attach to the move.
   public Pair<Score, ArrayList<Move>> countChangeAdd(int id, int[][] prevBoard, Score prevScore,
@@ -241,12 +271,18 @@ public class AgentService {
     Score score = prevScore.clone();
     int y = move.y;
     int x = move.x;
-    for (int[] xyChange : new int[][]{{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {1, 1}, {1, -1},
-        {1, 0}, {1, 1}}) {
-      // print(this.calculateOldLines(prevBoard, id, x, y, score, xChange, yChange))
+    for (int[] xyChange : new int[][]{
+        {0, -1},
+        {-1, -1},
+        {-1, 0},
+        {-1, 1},
+        {0, 1},
+        {1, 1},
+        {1, 0},
+        {1, -1},
+    }) {
       Pair<Openness, Integer> oldLineData = this.calculateOldLines(prevBoard, id, x, y, xyChange[0],
           xyChange[1]);
-      // print(prevIndex, newIndex, "returned")
       if (oldLineData.b > 0) {
         score.decreaseOpeness(oldLineData);
       }
@@ -279,6 +315,7 @@ public class AgentService {
     }
     return new Pair<>(Openness.CLOSED, 0);
   }
+
 
   // Finds moves that are valid to explore, only finds moves plus minus one of the
   // total area currently played in

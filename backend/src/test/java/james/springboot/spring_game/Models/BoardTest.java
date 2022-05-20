@@ -3,7 +3,6 @@ package james.springboot.spring_game.Models;
 import james.springboot.spring_game.Exceptions.GameOverException;
 import james.springboot.spring_game.Exceptions.InvalidCellStateException;
 import james.springboot.spring_game.Exceptions.InvalidPlayerIdException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
@@ -38,7 +38,7 @@ public class BoardTest {
     int[][] boardRaw = board.getBoard();
     for (int[] line : boardRaw) {
       for (int cell : line) {
-        Assertions.assertEquals(0, cell);
+        assertEquals(0, cell);
       }
     }
   }
@@ -47,30 +47,30 @@ public class BoardTest {
   @CsvSource({"1,8,3", "3,6,2", "5,4,1", "7,2,2", "9,0,3"})
   public void makeMoveResultsInTheCorrectChangeInTheBoard(int x, int y, int id) throws InvalidPlayerIdException, InvalidCellStateException {
     board.makeMove(x, y, id);
-    Assertions.assertEquals(id, board.getBoard()[y][x]);
+    assertEquals(id, board.getBoard()[y][x]);
   }
 
   @Test
   public void makeMoveWithId0ThrowsException() {
-    Assertions.assertThrows(InvalidPlayerIdException.class, () -> board.makeMove(0, 0, 0));
+    assertThrows(InvalidPlayerIdException.class, () -> board.makeMove(0, 0, 0));
   }
 
   @Test
   public void makeMoveOnNot0CellThrowsException() throws InvalidPlayerIdException, InvalidCellStateException {
     board.makeMove(0, 0, 1);
-    Assertions.assertThrows(InvalidCellStateException.class, () -> board.makeMove(0, 0, 2));
+    assertThrows(InvalidCellStateException.class, () -> board.makeMove(0, 0, 2));
   }
 
   @Test
   public void undoMoveResultsIn0s() throws InvalidPlayerIdException, InvalidCellStateException {
     board.makeMove(0, 0, 1);
     board.undoMove(0, 0);
-    Assertions.assertEquals(0, board.getBoard()[0][0]);
+    assertEquals(0, board.getBoard()[0][0]);
   }
 
   @Test
   public void undoMoveThrowsExceptionIfCellIs0() {
-    Assertions.assertThrows(InvalidCellStateException.class, () -> board.undoMove(0, 0));
+    assertThrows(InvalidCellStateException.class, () -> board.undoMove(0, 0));
   }
 
   @Test
@@ -82,11 +82,11 @@ public class BoardTest {
     //TODO: mock Utilities?
     Board newBoard = board.deepCopyBoard();
     int[][] boardRaw = newBoard.getBoard();
-    Assertions.assertAll(
-        () -> Assertions.assertEquals(1, boardRaw[2][1]),
-        () -> Assertions.assertEquals(2, boardRaw[2][3]),
-        () -> Assertions.assertEquals(3, boardRaw[5][3]),
-        () -> Assertions.assertEquals(4, boardRaw[5][7])
+    assertAll(
+        () -> assertEquals(1, boardRaw[2][1]),
+        () -> assertEquals(2, boardRaw[2][3]),
+        () -> assertEquals(3, boardRaw[5][3]),
+        () -> assertEquals(4, boardRaw[5][7])
     );
   }
 
@@ -97,25 +97,25 @@ public class BoardTest {
     board.makeMove(2, 3, 2);
     newBoard.makeMove(5, 4, 3);
     newBoard.makeMove(3, 6, 4);
-    Assertions.assertAll(
-        () -> Assertions.assertNotEquals(board.getBoard()[1][1], newBoard.getBoard()[1][1]),
-        () -> Assertions.assertNotEquals(board.getBoard()[3][2], newBoard.getBoard()[3][2]),
-        () -> Assertions.assertNotEquals(board.getBoard()[4][5], newBoard.getBoard()[4][5]),
-        () -> Assertions.assertNotEquals(board.getBoard()[6][3], newBoard.getBoard()[6][3])
+    assertAll(
+        () -> assertNotEquals(board.getBoard()[1][1], newBoard.getBoard()[1][1]),
+        () -> assertNotEquals(board.getBoard()[3][2], newBoard.getBoard()[3][2]),
+        () -> assertNotEquals(board.getBoard()[4][5], newBoard.getBoard()[4][5]),
+        () -> assertNotEquals(board.getBoard()[6][3], newBoard.getBoard()[6][3])
 
     );
   }
 
   @Test
   public void findValidMoveReturnsAMove() throws GameOverException {
-    Assertions.assertInstanceOf(Move.class, board.findValidMove());
+    assertInstanceOf(Move.class, board.findValidMove());
   }
 
   @Test
   public void findValidMoveReturnsAMoveWhereCellIs0() throws InvalidPlayerIdException, InvalidCellStateException, GameOverException {
     board.makeMove(0, 0, 1);
     Move suggestedMove = board.findValidMove();
-    Assertions.assertEquals(0, board.getBoard()[suggestedMove.y][suggestedMove.x]);
+    assertEquals(0, board.getBoard()[suggestedMove.y][suggestedMove.x]);
   }
 
   @Test
@@ -125,14 +125,14 @@ public class BoardTest {
         board.makeMove(y, x, 1);
       }
     }
-    Assertions.assertThrows(GameOverException.class, () -> board.findValidMove());
+    assertThrows(GameOverException.class, () -> board.findValidMove());
   }
 
   private void assertLineOfPairsIsEqual(List<Pair<Integer, Integer>> expectedValues, List<Pair<Integer, Integer>> generatedValues) {
     for (int index = 0; index < expectedValues.size(); index++) {
-      Assertions.assertEquals(expectedValues.get(index).a, generatedValues.get(index).a);
-      Assertions.assertEquals(expectedValues.get(index).b, generatedValues.get(index).b);
-      Assertions.assertEquals(expectedValues.size(), generatedValues.size());
+      assertEquals(expectedValues.get(index).a, generatedValues.get(index).a);
+      assertEquals(expectedValues.get(index).b, generatedValues.get(index).b);
+      assertEquals(expectedValues.size(), generatedValues.size());
     }
   }
 
@@ -147,10 +147,10 @@ public class BoardTest {
         new Pair<>(5, 9), new Pair<>(6, 9), new Pair<>(7, 9), new Pair<>(8, 9), new Pair<>(9, 9)
     );
     List<List<Pair<Integer, Integer>>> generatedCoords = Board.defineHorizontalCoords();
-    Assertions.assertAll(
+    assertAll(
         () -> assertLineOfPairsIsEqual(firstLine, generatedCoords.get(0)),
         () -> assertLineOfPairsIsEqual(lastLine, generatedCoords.get(9)),
-        () -> Assertions.assertEquals(10, generatedCoords.size())
+        () -> assertEquals(10, generatedCoords.size())
     );
   }
 
@@ -165,10 +165,10 @@ public class BoardTest {
         new Pair<>(9, 5), new Pair<>(9, 6), new Pair<>(9, 7), new Pair<>(9, 8), new Pair<>(9, 9)
     );
     List<List<Pair<Integer, Integer>>> generatedCoords = Board.defineVerticalCoords();
-    Assertions.assertAll(
+    assertAll(
         () -> assertLineOfPairsIsEqual(firstLine, generatedCoords.get(0)),
         () -> assertLineOfPairsIsEqual(lastLine, generatedCoords.get(9)),
-        () -> Assertions.assertEquals(10, generatedCoords.size())
+        () -> assertEquals(10, generatedCoords.size())
     );
   }
 
@@ -185,11 +185,11 @@ public class BoardTest {
         new Pair<>(5, 5), new Pair<>(6, 6), new Pair<>(7, 7), new Pair<>(8, 8), new Pair<>(9, 9)
     );
     List<List<Pair<Integer, Integer>>> generatedCoords = Board.defineDownDiagCoords();
-    Assertions.assertAll(
+    assertAll(
         () -> assertLineOfPairsIsEqual(firstLine, generatedCoords.get(0)),
         () -> assertLineOfPairsIsEqual(lastLine, generatedCoords.get(18)),
         () -> assertLineOfPairsIsEqual(midLine, generatedCoords.get(9)),
-        () -> Assertions.assertEquals(19, generatedCoords.size())
+        () -> assertEquals(19, generatedCoords.size())
     );
   }
 
@@ -207,11 +207,11 @@ public class BoardTest {
     );
 
     List<List<Pair<Integer, Integer>>> generatedCoords = Board.defineUpDiagCoords();
-    Assertions.assertAll(
+    assertAll(
         () -> assertLineOfPairsIsEqual(firstLine, generatedCoords.get(0)),
         () -> assertLineOfPairsIsEqual(lastLine, generatedCoords.get(18)),
         () -> assertLineOfPairsIsEqual(midLine, generatedCoords.get(9)),
-        () -> Assertions.assertEquals(19, generatedCoords.size())
+        () -> assertEquals(19, generatedCoords.size())
     );
   }
 
@@ -316,8 +316,76 @@ public class BoardTest {
   }
 
   @Test
-  public void calculateLinesNextToPlayedMoveAndReduceTheirOpenness() throws InvalidPlayerIdException, InvalidCellStateException {
+  public void calculateLinesNextToPlayedMove() throws InvalidPlayerIdException, InvalidCellStateException {
     board.makeMove(6, 5, 1);
-    Pair<Openness, Integer> reduction = board.calculateLinesNextToPlayedMoveAndReduceTheirOpenness(1, 5, 5, 1, 0);
+    Triplet<Openness, Integer, Integer> result = board.findLinesNextToPlayedMove(5, 5, 1, 0);
+    assertAll(
+        () -> assertEquals(Openness.OPEN, result.a),
+        () -> assertEquals(1, result.b),
+        () -> assertEquals(1, result.c)
+    );
+  }
+
+  @Test
+  public void calculateLinesNextToPlayedMoveWithAdjacentOpponentMove() throws InvalidPlayerIdException, InvalidCellStateException {
+    board.makeMove(6, 5, 1);
+    board.makeMove(7, 5, 2);
+    Triplet<Openness, Integer, Integer> result = board.findLinesNextToPlayedMove(5, 5, 1, 0);
+    assertAll(
+        () -> assertEquals(Openness.SEMI, result.a),
+        () -> assertEquals(1, result.b),
+        () -> assertEquals(1, result.c)
+    );
+  }
+
+  @Test
+  public void calculateLinesNextToPlayedMoveWithAdjacentWall() throws InvalidPlayerIdException, InvalidCellStateException {
+    Triplet<Openness, Integer, Integer> result = board.findLinesNextToPlayedMove(9, 5, 1, 0);
+    assertAll(
+        () -> assertEquals(Openness.CLOSED, result.a),
+        () -> assertEquals(0, result.b),
+        () -> assertEquals(0, result.c)
+    );
+  }
+
+  @Test
+  public void calculateLinesNextToPlayedMoveWithEmptySpace() throws InvalidPlayerIdException, InvalidCellStateException {
+    board.makeMove(7, 5, 1);
+    board.makeMove(8, 5, 1);
+    Triplet<Openness, Integer, Integer> result = board.findLinesNextToPlayedMove(5, 5, 1, 0);
+    assertAll(
+        () -> assertEquals(0, result.b),
+        () -> assertEquals(0, result.c)
+    );
+  }
+
+  @Test
+  public void calculateLinesNextToPlayedMove1ThenWall() throws InvalidPlayerIdException, InvalidCellStateException {
+    board.makeMove(9, 5, 1);
+    Triplet<Openness, Integer, Integer> result = board.findLinesNextToPlayedMove(8, 5, 1, 0);
+    assertAll(
+        () -> assertEquals(Openness.SEMI, result.a),
+        () -> assertEquals(1, result.b),
+        () -> assertEquals(1, result.c)
+    );
+  }
+
+  @Test
+  public void calculateLinesNextToPlayedMoveConnectingEntireLengthOfBoard() throws InvalidPlayerIdException, InvalidCellStateException {
+    board.makeMove(1, 5, 1);
+    board.makeMove(2, 5, 1);
+    board.makeMove(3, 5, 1);
+    board.makeMove(4, 5, 1);
+    board.makeMove(5, 5, 1);
+    board.makeMove(6, 5, 1);
+    board.makeMove(7, 5, 1);
+    board.makeMove(8, 5, 1);
+    board.makeMove(9, 5, 1);
+    Triplet<Openness, Integer, Integer> result = board.findLinesNextToPlayedMove(0, 5, 1, 0);
+    assertAll(
+        () -> assertEquals(Openness.SEMI, result.a),
+        () -> assertEquals(9, result.b),
+        () -> assertEquals(1, result.c)
+    );
   }
 }

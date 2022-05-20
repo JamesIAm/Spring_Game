@@ -177,27 +177,41 @@ public class Board {
     }
   }
 
-  public Pair<Openness, Integer> calculateLinesNextToPlayedMoveAndReduceTheirOpenness(int id, int x, int y, Integer xChange, Integer yChange) {
-//    for (int previousLineLength = 1; previousLineLength < this.X_IN_A_LINE + 1; previousLineLength++) {// Check positive horizontal
-//      int newX = x + (xChange * previousLineLength);
-//      int newY = y + (yChange * previousLineLength);
-//      // print(newY, newX)
-//      if (newX < this.BOARD_SIZE && newY < this.BOARD_SIZE && newX >= 0 && newY >= 0) {
-//        int value = board[newY][newX];
-//        if (value == 0) {
-//          // If it is now semi open. The previous line was open
-////          this.priorityMoves.add(new Move(newX, newY));
-//          //  print(this.priorityMoves)
-//          return new Pair<>(Openness.OPEN, previousLineLength - 1);
-//        } else if (value != id) {
-//          // If it is now closed, the previous line was semi open
-//          return new Pair<>(Openness.SEMI, previousLineLength - 1);
-//        }
-//      } else {
-//        return new Pair<>(Openness.SEMI, previousLineLength - 1);
-//      }
-//    }
-//    return new Pair<>(Openness.CLOSED, 0);
+  /**
+   * @param x
+   * @param y
+   * @param xChange
+   * @param yChange
+   * @return Triplet containing:
+   * a: Whether the old line was open or closed.
+   * b: The length of the old line
+   * c: What ID the old line belonged to - Or 0 if there is no line next to it
+   */
+  public Triplet<Openness, Integer, Integer> findLinesNextToPlayedMove(int x, int y, Integer xChange, Integer yChange) {
+    int firstY = y + yChange;
+    int firstX = x + xChange;
+    if (firstX >= BOARD_SIZE || firstX < 0 || firstY >= BOARD_SIZE || firstY < 0) {
+      return new Triplet<>(Openness.CLOSED, 0, 0);
+    }
+
+    int id = board[y + yChange][x + xChange];
+    for (int previousLineLength = 1; previousLineLength <= BOARD_SIZE; previousLineLength++) {// Check positive horizontal
+      int newX = x + (xChange * previousLineLength);
+      int newY = y + (yChange * previousLineLength);
+      if (newX < BOARD_SIZE && newY < this.BOARD_SIZE && newX >= 0 && newY >= 0) {
+        int value = board[newY][newX];
+        if (value == 0) {
+          // If it is now semi open. The previous line was open
+//          this.priorityMoves.add(new Move(newX, newY));
+          return new Triplet<>(Openness.OPEN, previousLineLength - 1, id);
+        } else if (value != id) {
+          // If it is now closed, the previous line was semi open
+          return new Triplet<>(Openness.SEMI, previousLineLength - 1, id);
+        }
+      } else {
+        return new Triplet<>(Openness.SEMI, previousLineLength - 1, id);
+      }
+    }
     return null;
   }
 }
